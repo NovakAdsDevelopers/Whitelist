@@ -29,3 +29,9 @@ export interface TypesLogin{
     token: string;
   }
 }
+
+export interface TypesRegister{
+  SetUsuario:{
+    id: number;
+  }
+}

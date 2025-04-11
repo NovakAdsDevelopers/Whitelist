@@ -8,6 +8,14 @@ export const LOGIN = gql`
   }
 `;
 
+export const REGISTER = gql`
+  mutation Mutation($data: UsuarioInput!) {
+    SetUsuario(data: $data) {
+      id
+    }
+  }
+`;
+
 export const GET_USUARIOS = gql`
   query GetUsuarios($pagination: Pagination) {
     GetUsuarios(pagination: $pagination) {

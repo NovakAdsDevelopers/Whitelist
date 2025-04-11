@@ -11,7 +11,7 @@ import {
 
 import * as authHelper from '../_helpers';
 import { type AuthModel, type UserModel } from '@/auth';
-import { MutationLogin } from '@/graphql/services/Usuario';
+import { MutationLogin, MutationRegister } from '@/graphql/services/Usuario';
 
 const API_URL = import.meta.env.VITE_APP_API_URL;
 export const LOGIN_URL = `${API_URL}/login`;
@@ -31,7 +31,7 @@ interface AuthContextProps {
   loginWithGoogle?: () => Promise<void>;
   loginWithFacebook?: () => Promise<void>;
   loginWithGithub?: () => Promise<void>;
-  register: (email: string, password: string, password_confirmation: string) => Promise<void>;
+  register: (nome: string, email: string, senha: string) => Promise<void>;
   requestPasswordResetLink: (email: string) => Promise<void>;
   changePassword: (
     email: string,
@@ -51,6 +51,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
   const [auth, setAuth] = useState<AuthModel | undefined>(authHelper.getAuth());
   const [currentUser, setCurrentUser] = useState<UserModel | undefined>();
   const { handleLogin, data, error } = MutationLogin();
+  const { handleRegister } = MutationRegister();
 
   const verify = async () => {
     if (auth) {
@@ -73,43 +74,44 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       authHelper.removeAuth();
     }
   };
-  
 
   const login = async (email: string, password: string) => {
     try {
       const response = await handleLogin(email, password);
-  
+
       if (!response || !response.Login.token) {
-        throw new Error("Erro ao obter token de autenticação.");
+        throw new Error('Erro ao obter token de autenticação.');
       }
-  
-      const auth: AuthModel = { api_token: response.Login.token, access_token: response.Login.token };
+
+      const auth: AuthModel = {
+        api_token: response.Login.token,
+        access_token: response.Login.token
+      };
       saveAuth(auth);
-  
+
       // Obtém os dados do usuário do token ou do backend
       const { data: user } = await getUser();
       setCurrentUser(user);
     } catch (error) {
       saveAuth(undefined);
-      console.error("Erro ao fazer login:", error);
+      console.error('Erro ao fazer login:', error);
       throw new Error(`Erro ao fazer login: ${error}`);
     }
   };
-  
 
-  const register = async (email: string, password: string, password_confirmation: string) => {
+  const register = async (nome: string, email: string, senha: string) => {
     try {
-      const { data: auth } = await axios.post(REGISTER_URL, {
-        email,
-        password,
-        password_confirmation
-      });
-      saveAuth(auth);
-      const { data: user } = await getUser();
-      setCurrentUser(user);
-    } catch (error) {
-      saveAuth(undefined);
-      throw new Error(`Error ${error}`);
+      const user = await handleRegister(nome, email, senha);
+
+      if (user?.SetUsuario.id) {
+        console.log('Usuário criado com sucesso:', user);
+      } else {
+        console.warn('Usuário criado, mas sem ID retornado:', user);
+      }
+
+    } catch (error: any) {
+      console.error('Erro ao criar usuário:', error);
+      throw new Error(error?.message || 'Erro desconhecido ao criar usuário');
     }
   };
 
@@ -135,28 +137,27 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const getUser = async () => {
     const auth = authHelper.getAuth();
-  
+
     if (auth?.api_token) {
       try {
         // Decodifica o token para obter os dados do usuário diretamente
-        const decodedToken = JSON.parse(atob(auth.api_token.split(".")[1]));
-  
+        const decodedToken = JSON.parse(atob(auth.api_token.split('.')[1]));
+
         const user: UserModel = {
           id: decodedToken.id,
           email: decodedToken.email,
           nome: decodedToken.nome
         };
-  
+
         return { data: user };
       } catch (error) {
-        console.error("Erro ao decodificar o token", error);
+        console.error('Erro ao decodificar o token', error);
       }
     }
-  
+
     // Se não conseguiu pegar os dados do token, faz a requisição para o backend
     return await axios.get<UserModel>(GET_USER_URL);
   };
-  
 
   const logout = () => {
     saveAuth(undefined);

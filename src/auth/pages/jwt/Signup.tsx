@@ -8,15 +8,20 @@ import { useAuthContext } from '../../useAuthContext';
 import { toAbsoluteUrl } from '@/utils';
 import { Alert, KeenIcon } from '@/components';
 import { useLayout } from '@/providers';
+import { toast } from 'sonner';
 
 const initialValues = {
+  nome: '',
   email: '',
   password: '',
-  changepassword: '',
   acceptTerms: false
 };
 
 const signupSchema = Yup.object().shape({
+  nome: Yup.string()
+    .min(2, 'Minimum 2 symbols')
+    .max(50, 'Maximum 50 symbols')
+    .required('Name is required'),
   email: Yup.string()
     .email('Wrong email format')
     .min(3, 'Minimum 3 symbols')
@@ -26,12 +31,7 @@ const signupSchema = Yup.object().shape({
     .min(3, 'Minimum 3 symbols')
     .max(50, 'Maximum 50 symbols')
     .required('Password is required'),
-  changepassword: Yup.string()
-    .min(3, 'Minimum 3 symbols')
-    .max(50, 'Maximum 50 symbols')
-    .required('Password confirmation is required')
-    .oneOf([Yup.ref('password')], "Password and Confirm Password didn't match"),
-  acceptTerms: Yup.bool().required('You must accept the terms and conditions')
+  acceptTerms: Yup.bool().oneOf([true], 'You must accept the terms and conditions')
 });
 
 const Signup = () => {
@@ -41,7 +41,6 @@ const Signup = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { currentLayout } = useLayout();
 
   const formik = useFormik({
@@ -53,10 +52,22 @@ const Signup = () => {
         if (!register) {
           throw new Error('JWTProvider is required for this form.');
         }
-        await register(values.email, values.password, values.changepassword);
-        navigate(from, { replace: true });
-      } catch (error) {
+        await register(values.nome, values.email, values.password);
+        // Exibe o toast com barra de progresso de 3s
+        toast.message('✅ Cadastro realizado com sucesso!', {
+          description: `Bem-vindo(a), ${values.nome}!`,
+          duration: 3000 // 3 segundos
+        });
+
+        // Aguarda os 3s antes de navegar
+        setTimeout(() => {
+          navigate(from, { replace: true });
+        }, 3000);
+      } catch (error: any) {
         console.error(error);
+        toast.message('❌ Erro ao realizar cadastro', {
+          description: error.message || 'Os dados de cadastro estão incorretos.'
+        });
         setStatus('The sign up details are incorrect');
         setSubmitting(false);
         setLoading(false);
@@ -69,11 +80,6 @@ const Signup = () => {
     setShowPassword(!showPassword);
   };
 
-  const toggleConfirmPassword = (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
   return (
     <div className="card max-w-[370px] w-full">
       <form
@@ -84,7 +90,7 @@ const Signup = () => {
         <div className="text-center mb-2.5">
           <h3 className="text-lg font-semibold text-gray-900 leading-none mb-2.5">Sign up</h3>
           <div className="flex items-center justify-center font-medium">
-            <span className="text-2sm text-gray-600 me-1.5">Already have an Account ?</span>
+            <span className="text-2sm text-gray-600 me-1.5">Already have an Account?</span>
             <Link
               to={currentLayout?.name === 'auth-branded' ? '/auth/login' : '/auth/classic/login'}
               className="text-2sm link"
@@ -123,6 +129,30 @@ const Signup = () => {
         </div>
 
         {formik.status && <Alert variant="danger">{formik.status}</Alert>}
+
+        <div className="flex flex-col gap-1">
+          <label className="form-label text-gray-900">Name</label>
+          <label className="input">
+            <input
+              placeholder="Enter your name"
+              type="text"
+              autoComplete="off"
+              {...formik.getFieldProps('nome')}
+              className={clsx(
+                'form-control bg-transparent',
+                { 'is-invalid': formik.touched.nome && formik.errors.nome },
+                {
+                  'is-valid': formik.touched.nome && !formik.errors.nome
+                }
+              )}
+            />
+          </label>
+          {formik.touched.nome && formik.errors.nome && (
+            <span role="alert" className="text-danger text-xs mt-1">
+              {formik.errors.nome}
+            </span>
+          )}
+        </div>
 
         <div className="flex flex-col gap-1">
           <label className="form-label text-gray-900">Email</label>
@@ -181,42 +211,6 @@ const Signup = () => {
           )}
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="form-label text-gray-900">Confirm Password</label>
-          <label className="input">
-            <input
-              type={showConfirmPassword ? 'text' : 'password'}
-              placeholder="Re-enter Password"
-              autoComplete="off"
-              {...formik.getFieldProps('changepassword')}
-              className={clsx(
-                'form-control bg-transparent',
-                {
-                  'is-invalid': formik.touched.changepassword && formik.errors.changepassword
-                },
-                {
-                  'is-valid': formik.touched.changepassword && !formik.errors.changepassword
-                }
-              )}
-            />
-            <button className="btn btn-icon" onClick={toggleConfirmPassword}>
-              <KeenIcon
-                icon="eye"
-                className={clsx('text-gray-500', { hidden: showConfirmPassword })}
-              />
-              <KeenIcon
-                icon="eye-slash"
-                className={clsx('text-gray-500', { hidden: !showConfirmPassword })}
-              />
-            </button>
-          </label>
-          {formik.touched.changepassword && formik.errors.changepassword && (
-            <span role="alert" className="text-danger text-xs mt-1">
-              {formik.errors.changepassword}
-            </span>
-          )}
-        </div>
-
         <label className="checkbox-group">
           <input
             className="checkbox checkbox-sm"
@@ -240,7 +234,7 @@ const Signup = () => {
         <button
           type="submit"
           className="btn btn-primary flex justify-center grow"
-          disabled={loading || formik.isSubmitting}
+          disabled={loading || formik.isSubmitting || !formik.values.acceptTerms}
         >
           {loading ? 'Please wait...' : 'Sign UP'}
         </button>
