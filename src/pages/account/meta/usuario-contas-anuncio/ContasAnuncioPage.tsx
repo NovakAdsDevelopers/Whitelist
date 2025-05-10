@@ -6,7 +6,7 @@ import { Toolbar, ToolbarActions, ToolbarHeading, ToolbarPageTitle } from '@/par
 import { PageNavbar } from '@/pages/account';
 
 import { useLayout } from '@/providers';
-import { ContasAnuncioContent } from './ContasAnuncioContent';
+import ContasAnuncioContent from './ContasAnuncioContent';
 
 const AnaliseClientePage = () => {
   const { currentLayout } = useLayout();

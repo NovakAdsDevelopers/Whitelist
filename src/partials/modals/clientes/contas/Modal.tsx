@@ -7,7 +7,16 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toAbsoluteUrl } from '@/utils';
-import { useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
+import { useParams } from 'react-router';
+import {
+  useQueryClienteContasAnuncio,
+  useSetTransacaoClienteContasAnuncio
+} from '@/graphql/services/ClienteContaAnuncio';
+import { useFormik } from 'formik';
+import { toast } from 'sonner';
+import { TipoTransacao } from '@/graphql/types/ClienteContaAnuncio';
+import { AuthContext } from '@/auth/providers/JWTProvider';
 
 interface IModalCreateClienteProps {
   open: boolean;
@@ -16,9 +25,29 @@ interface IModalCreateClienteProps {
 
 const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
   const [step, setStep] = useState(1);
-  const [tipo, setTipo] = useState<'entrada' | 'realocacao' | 'saida' | null>(null);
+  const [tipo, setTipo] = useState<TipoTransacao | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleTipoSelect = (value: 'entrada' | 'realocacao' | 'saida') => {
+  const { id } = useParams<{ id: string }>();
+  const clienteId = Number(id);
+
+  const variables = useMemo(
+    () => ({
+      clienteId,
+      pagination: {
+        pagina: 0,
+        quantidade: 100000
+      }
+    }),
+    [clienteId]
+  );
+
+  const { data } = useQueryClienteContasAnuncio(variables);
+  const { createTransacaoClienteContasAnuncio } = useSetTransacaoClienteContasAnuncio(clienteId);
+  const authContext = useContext(AuthContext);
+  const currentUser = authContext?.currentUser;
+
+  const handleTipoSelect = (value: TipoTransacao) => {
     setTipo(value);
   };
 
@@ -30,11 +59,48 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
 
   const getTitle = () => {
     if (step === 1) return 'Movimentação';
-    if (tipo === 'entrada') return 'Movimentação de Entrada';
-    if (tipo === 'realocacao') return 'Movimentação de Realocação';
-    if (tipo === 'saida') return 'Movimentação de Saída';
+    if (tipo === 'ENTRADA') return 'Movimentação de Entrada';
+    if (tipo === 'REALOCACAO') return 'Movimentação de Realocação';
+    if (tipo === 'SAIDA') return 'Movimentação de Saída';
     return 'Movimentação';
   };
+
+  const formik = useFormik({
+    initialValues: {
+      contaOrigemId: 0,
+      contaDestinoId: null,
+      valor: '',
+      tipoTransacao: ''
+    },
+    onSubmit: async (values, { setStatus, setSubmitting, resetForm }) => {
+      if (!tipo) return;
+
+      setLoading(true);
+      try {
+        await createTransacaoClienteContasAnuncio({
+          clienteId,
+          contaOrigemId: values.contaOrigemId,
+          contaDestinoId: tipo === 'REALOCACAO' ? values.contaDestinoId : null, // 👈 sempre passa null para não realocação
+          tipo,
+          valor: values.valor,
+          usuarioId: currentUser!.id
+        });
+
+        toast.success('✅ Transação realizada com sucesso!');
+        setStatus(null);
+        resetForm();
+        handleClose();
+      } catch (error: any) {
+        console.error(error);
+        toast.message('❌ Erro ao realizar movimentação', {
+          description: error?.message || 'Ocorreu um erro inesperado.'
+        });
+        setStatus('Erro ao realizar movimentação');
+      }
+      setLoading(false);
+      setSubmitting(false);
+    }
+  });
 
   const renderStepContent = () => {
     if (step === 1) {
@@ -43,20 +109,20 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
           <p className="text-sm text-muted-foreground mb-4">Selecione o tipo de transação:</p>
           <div className="flex gap-2">
             <Button
-              variant={tipo === 'entrada' ? 'default' : 'outline'}
-              onClick={() => handleTipoSelect('entrada')}
+              variant={tipo === 'ENTRADA' ? 'default' : 'outline'}
+              onClick={() => handleTipoSelect(TipoTransacao.ENTRADA)}
             >
               Entrada
             </Button>
             <Button
-              variant={tipo === 'realocacao' ? 'default' : 'outline'}
-              onClick={() => handleTipoSelect('realocacao')}
+              variant={tipo === 'REALOCACAO' ? 'default' : 'outline'}
+              onClick={() => handleTipoSelect(TipoTransacao.REALOCACAO)}
             >
               Realocação
             </Button>
             <Button
-              variant={tipo === 'saida' ? 'default' : 'outline'}
-              onClick={() => handleTipoSelect('saida')}
+              variant={tipo === 'SAIDA' ? 'default' : 'outline'}
+              onClick={() => handleTipoSelect(TipoTransacao.SAIDA)}
             >
               Saída
             </Button>
@@ -65,54 +131,143 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
       );
     }
 
-    // Step 2: conteúdo específico por tipo
     return (
-      <div className="w-full">
-        {tipo === 'entrada' && (
+      <form onSubmit={formik.handleSubmit} className="w-full">
+        {tipo === 'ENTRADA' && (
           <div className="w-full flex flex-col">
             <div className="w-full flex flex-col gap-2 mb-4">
-              <label htmlFor="">Tipo:</label>
-              <select name="" id="" className="w-full rounded-md border px-4 py-2 shadow-sm">
+              <label htmlFor="contaOrigemId">Conta:</label>
+              <select
+                id="contaOrigemId" // Certifique-se de que o id e name estão corretos
+                name="contaOrigemId"
+                className="w-full rounded-md border px-4 py-2 shadow-sm"
+                value={formik.values.contaOrigemId}
+                onChange={(e) => formik.setFieldValue('contaOrigemId', Number(e.target.value))}
+              >
                 <option value="">Selecione</option>
-                <option value="">Depósito</option>
+                {data?.GetContasAssociadasPorCliente.result.map((conta: any) => (
+                  <option key={conta.id} value={Number(conta.id)}>
+                    {conta.contaAnuncio.nome}
+                  </option>
+                ))}
               </select>
             </div>
+
             <div className="w-full flex flex-col gap-2">
-              <label htmlFor="">Valor do depósito</label>
+              <label htmlFor="valor">Valor do depósito:</label>
               <input
+                id="valor"
+                name="valor"
                 type="text"
-                className="px-4 py-1 border-b-2 decoration-n"
+                className="px-4 py-1 border-b-2"
                 placeholder="Insira seu valor aqui"
+                value={formik.values.valor}
+                onChange={formik.handleChange}
               />
             </div>
-            <hr className="my-4" />
-            <div>
-              <h2 className=''>Resumo da operação</h2>
-              <div>
-                <span>Fee</span>
-                <div>
-                  <span>5%</span>
-                  <span>R$ 28.000,00</span>
-                </div>
-              </div>
-              <div>
-                <span>Depósito inserido</span>
-                <div>
-                  <span>R$ 28.000,00</span>
-                </div>
-              </div>
-            </div>
+
+            <hr className="mt-4" />
           </div>
         )}
-        {tipo === 'realocacao' && <p>Formulário de realocação aqui</p>}
-        {tipo === 'saida' && <p>Formulário de saída aqui</p>}
-      </div>
+        {tipo === 'REALOCACAO' && (
+          <div className="w-full flex flex-col">
+            <div className="w-full flex flex-col gap-2 mb-4">
+              <label htmlFor="contaOrigemId">Conta de origem:</label>
+              <select
+                id="contaOrigemId"
+                name="contaOrigemId"
+                className="w-full rounded-md border px-4 py-2 shadow-sm"
+                value={formik.values.contaOrigemId}
+                onChange={(e) => formik.setFieldValue('contaOrigemId', Number(e.target.value))}
+              >
+                <option value="">Selecione</option>
+                {data?.GetContasAssociadasPorCliente.result.map((conta: any) => (
+                  <option key={conta.id} value={Number(conta.id)}>
+                    {conta.contaAnuncio.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="w-full flex flex-col gap-2 mb-4">
+              <label htmlFor="contaDestinoId">Conta de destino:</label>
+              <select
+                id="contaDestinoId"
+                name="contaDestinoId"
+                className="w-full rounded-md border px-4 py-2 shadow-sm"
+                value={formik.values.contaDestinoId !== null ? formik.values.contaDestinoId : ''}
+                onChange={(e) => formik.setFieldValue('contaDestinoId', Number(e.target.value))}
+              >
+                <option value="">Selecione</option>
+                {data?.GetContasAssociadasPorCliente.result.map((conta: any) => (
+                  <option key={conta.id} value={Number(conta.id)}>
+                    {conta.contaAnuncio.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="w-full flex flex-col gap-2">
+              <label htmlFor="valor">Valor da realocação:</label>
+              <input
+                id="valor"
+                name="valor"
+                type="text"
+                className="px-4 py-1 border-b-2"
+                placeholder="Insira seu valor aqui"
+                value={formik.values.valor}
+                onChange={formik.handleChange}
+              />
+            </div>
+
+            <hr className="mt-4" />
+          </div>
+        )}
+        {tipo === 'SAIDA' && (
+          <div className="w-full flex flex-col">
+            <div className="w-full flex flex-col gap-2 mb-4">
+              <label htmlFor="contaOrigemId">Conta:</label>
+              <select
+                id="contaOrigemId" // Certifique-se de que o id e name estão corretos
+                name="contaOrigemId"
+                className="w-full rounded-md border px-4 py-2 shadow-sm"
+                value={formik.values.contaOrigemId}
+                onChange={(e) => formik.setFieldValue('contaOrigemId', Number(e.target.value))}
+              >
+                <option value="">Selecione</option>
+                {data?.GetContasAssociadasPorCliente.result
+                  .filter((conta) => conta.contaAnuncio.status === 101)
+                  .map((conta: any) => (
+                    <option key={conta.id} value={Number(conta.id)}>
+                      {conta.contaAnuncio.nome}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="w-full flex flex-col gap-2">
+              <label htmlFor="valor">Valor do saque:</label>
+              <input
+                id="valor"
+                name="valor"
+                type="text"
+                className="px-4 py-1 border-b-2"
+                placeholder="Insira seu valor aqui"
+                value={formik.values.valor}
+                onChange={formik.handleChange}
+              />
+            </div>
+
+            <hr className="mt-4" />
+          </div>
+        )}
+      </form>
     );
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[350px]">
+      <DialogContent className="max-w-[400px]">
         <DialogHeader>
           <DialogTitle>{getTitle()}</DialogTitle>
         </DialogHeader>
@@ -135,7 +290,7 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
                 <Button variant="outline" onClick={handleClose}>
                   Fechar
                 </Button>
-                <Button onClick={() => setStep(2)} disabled={!tipo}>
+                <Button onClick={() => tipo && setStep(2)} disabled={!tipo}>
                   Avançar
                 </Button>
               </>
@@ -144,7 +299,9 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
                 <Button variant="outline" onClick={() => setStep(1)}>
                   Voltar
                 </Button>
-                <Button onClick={() => alert('Finalizado!')}>Finalizar</Button>
+                <Button onClick={formik.submitForm} disabled={loading || formik.isSubmitting}>
+                  {loading ? 'Finalizando...' : 'Finalizar'}
+                </Button>
               </>
             )}
           </div>

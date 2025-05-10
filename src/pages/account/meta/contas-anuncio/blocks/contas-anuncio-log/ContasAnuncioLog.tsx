@@ -43,6 +43,7 @@ const ContasAnuncioLog = () => {
         moeda: conta.moeda,
         fusoHorario: conta.fusoHorario,
         gastoTotal: conta.gastoTotal
+        
       })) || []
     );
   }, [data]);
@@ -59,99 +60,103 @@ const ContasAnuncioLog = () => {
     );
   };
 
-  const columns = useMemo<ColumnDef<IContasAnuncioLogData>[]>(
-    () => [
-      {
-        accessorKey: 'id',
-        header: () => <DataGridRowSelectAll />,
-        cell: ({ row }) => <DataGridRowSelect row={row} />,
-        enableSorting: false,
-        enableHiding: false,
-        meta: {
-          headerClassName: 'w-0'
-        }
-      },
-      {
-        accessorFn: (row) => row.nome, // Nova coluna Cliente
-        id: 'cliente',
-        header: ({ column }) => (
-          <DataGridColumnHeader
-            title="Conta"
-            filter={<ColumnInputFilter column={column} />}
-            column={column}
-          />
-        ),
-        enableSorting: true,
-        cell: (info) => info.getValue(),
-        meta: {
-          headerClassName: 'min-w-[200px]'
-        }
-      },
-      {
-        accessorFn: (row) => Number(row.gastoTotal), // Nova coluna Total Gasto
-        id: 'totalGasto',
-        header: ({ column }) => <DataGridColumnHeader title="Total Gasto" column={column} />,
-        enableSorting: true,
-        cell: (info) => {
-          const value = info.getValue();
-          return typeof value === 'number'
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-            : '-';
-        },
-        meta: {
-          headerClassName: 'min-w-[200px]'
-        }
-      },
-      {
-        accessorFn: (row) => Number(row.gastoTotal) - 1000, // Nova coluna Saldo Total Disponível
-        id: 'saldoDisponivel',
-        header: ({ column }) => (
-          <DataGridColumnHeader title="Saldo Total Disponível" column={column} />
-        ),
-        enableSorting: true,
-        cell: (info) => {
-          const value = info.getValue();
-          return typeof value === 'number'
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-            : '-';
-        },
-        meta: {
-          headerClassName: 'min-w-[200px]'
-        }
-      },
-
-      {
-        accessorFn: (row) => row.status, // Usando a coluna "severity" para Status
-        id: 'status',
-        header: ({ column }) => <DataGridColumnHeader title="Status" column={column} />,
-        enableSorting: true,
-        cell: (info) => (
-          <span className={`badge badge-sm badge-outline `}>{info.row.original.status}</span>
-        ),
-        meta: {
-          headerClassName: 'min-w-[130px]'
-        }
-      },
-      {
-        id: 'click',
-        header: () => '',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <Link
-            to={`/meta/${row.original.id}/contas-anuncio`}
-            title="Contas de Anúncio"
-            className="btn btn-icon btn-light btn-clear btn-sm"
-          >
-            <KeenIcon icon="data" />
-          </Link>
-        ), // Usando o componente RowActionButton
-        meta: {
-          headerClassName: 'w-[60px]'
-        }
+  const columns = useMemo<ColumnDef<IContasAnuncioLogData>[]>(() => [
+    {
+      accessorKey: 'id',
+      header: () => <DataGridRowSelectAll />,
+      cell: ({ row }) => <DataGridRowSelect row={row} />,
+      enableSorting: false,
+      enableHiding: false,
+      meta: {
+        headerClassName: 'w-0'
       }
-    ],
-    []
-  );
+    },
+    {
+      accessorFn: (row) => row.nome, 
+      id: 'cliente',
+      header: ({ column }) => (
+        <DataGridColumnHeader
+          title="Conta"
+          filter={<ColumnInputFilter column={column} />}
+          column={column}
+        />
+      ),
+      enableSorting: true,
+      cell: (info) => info.getValue(),
+      meta: {
+        headerClassName: 'min-w-[200px]'
+      }
+    },
+    {
+      accessorFn: (row) => Number(row.gastoTotal), // Total Gasto
+      id: 'totalGasto',
+      header: ({ column }) => <DataGridColumnHeader title="Total Gasto" column={column} />,
+      enableSorting: true,
+      cell: (info) => {
+        const value = info.getValue();
+        return typeof value === 'number'
+          ? new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: 'BRL'
+            }).format(Math.max(0, value / 100)) // 👈 valor tratado como centavos
+          : '-';
+      },
+      meta: {
+        headerClassName: 'min-w-[200px]'
+      }
+    },
+    {
+      accessorFn: (row) => Number(row.gastoTotal) - 1000, // Saldo Total Disponível
+      id: 'saldoDisponivel',
+      header: ({ column }) => (
+        <DataGridColumnHeader title="Saldo Total Disponível" column={column} />
+      ),
+      enableSorting: true,
+      cell: (info) => {
+        const value = info.getValue();
+        return typeof value === 'number'
+          ? new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: 'BRL'
+            }).format(Math.max(0, value / 100)) // 👈 trata negativos e divide por 100
+          : '-';
+      },
+      meta: {
+        headerClassName: 'min-w-[200px]'
+      }
+    },
+    {
+      accessorFn: (row) => row.status, // Status
+      id: 'status',
+      header: ({ column }) => <DataGridColumnHeader title="Status" column={column} />,
+      enableSorting: true,
+      cell: (info) => (
+        <span className="badge badge-sm badge-outline">
+          {info.row.original.status}
+        </span>
+      ),
+      meta: {
+        headerClassName: 'min-w-[130px]'
+      }
+    },
+    {
+      id: 'click',
+      header: () => '',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <Link
+          to={`/meta/${row.original.id}/contas-anuncio`}
+          title="Contas de Anúncio"
+          className="btn btn-icon btn-light btn-clear btn-sm"
+        >
+          <KeenIcon icon="data" />
+        </Link>
+      ),
+      meta: {
+        headerClassName: 'w-[60px]'
+      }
+    }
+  ], []);
 
   const handleRowSelection = (state: RowSelectionState) => {
     const selectedRowIds = Object.keys(state);

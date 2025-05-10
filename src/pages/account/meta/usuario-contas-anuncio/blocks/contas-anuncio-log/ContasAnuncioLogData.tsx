@@ -5,6 +5,9 @@ interface IContasAnuncioLogData {
   moeda: string;
   fusoHorario: string;
   gastoAPI: number;
+  gastoTotal: number;
+  depositoTotal: number;
+  saldo: number;
 }
 
 

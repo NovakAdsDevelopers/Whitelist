@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Column, ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import {
   DataGrid,
@@ -16,10 +16,27 @@ import { Button } from '@/components/ui/button';
 import { ModalCreateCliente } from '@/partials/modals/clientes/create';
 import { Link } from 'react-router-dom';
 import { useQueryClientes } from '@/graphql/services/Cliente';
+import { useClient } from '@/auth/providers/ClientProvider';
 
-interface IColumnFilterProps<TData, TValue> {
-  column: Column<TData, TValue>;
-}
+// ✅ Componente separado para evitar hook em render dinâmica
+const ClienteLinkCell: React.FC<{ id: number }> = ({ id }) => {
+  const { setClientInfo } = useClient();
+
+  const handleClick = () => {
+    setClientInfo(id);
+  };
+
+  return (
+    <Link
+      to={`/meta/${id}/contas-anuncio`}
+      onClick={handleClick}
+      title="Contas de Anúncio"
+      className="btn btn-icon btn-light btn-clear btn-sm"
+    >
+      <KeenIcon icon="data" />
+    </Link>
+  );
+};
 
 const ClientesLog = () => {
   const variables = useMemo(
@@ -34,7 +51,6 @@ const ClientesLog = () => {
 
   const { data } = useQueryClientes(variables);
 
-  // 🔥 Removido o useMemo para garantir atualização dos dados
   const clientesData: IClienteLogData[] =
     data?.GetClientes?.result?.map((cliente) => ({
       id: cliente.id,
@@ -44,7 +60,7 @@ const ClientesLog = () => {
       atualizadoEm: new Date(cliente.atualizadoEm)
     })) || [];
 
-  const ColumnInputFilter = <TData, TValue>({ column }: IColumnFilterProps<TData, TValue>) => (
+  const ColumnInputFilter = ({ column }: any) => (
     <Input
       placeholder="Filtrar..."
       value={(column.getFilterValue() as string) ?? ''}
@@ -95,15 +111,7 @@ const ClientesLog = () => {
         id: 'click',
         header: () => '',
         enableSorting: false,
-        cell: ({ row }) => (
-          <Link
-            to={`/meta/${row.original.id}/contas-anuncio`}
-            title="Contas de Anúncio"
-            className="btn btn-icon btn-light btn-clear btn-sm"
-          >
-            <KeenIcon icon="data" />
-          </Link>
-        ),
+        cell: ({ row }) => <ClienteLinkCell id={row.original.id} />,
         meta: { headerClassName: 'w-[60px]' }
       }
     ],
@@ -141,8 +149,6 @@ const ClientesLog = () => {
       </div>
     );
   };
-
-  console.log(clientesData);
 
   return (
     <DataGrid

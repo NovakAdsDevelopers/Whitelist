@@ -17,6 +17,8 @@ export const GET_CLIENTE_CONTA_ANUNCIO = gql`
         inicioAssociacao
         fimAssociacao
         ativo
+        depositoTotal
+        saldo
         contaAnuncio {
           id
           nome
@@ -37,6 +39,14 @@ export const SET_CLIENTE_CONTA_ANUNCIO = gql`
       associacoes {
         id
       }
+    }
+  }
+`;
+
+export const SET_TRANSACAO_CLIENTE_CONTA_ANUNCIO = gql`
+  mutation SetTransacaoClienteContaAnuncio($data: TransacaoClienteContaAnuncioInput!) {
+    SetTransacaoClienteContaAnuncio(data: $data) {
+      id
     }
   }
 `;

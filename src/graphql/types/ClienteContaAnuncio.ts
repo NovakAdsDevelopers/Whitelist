@@ -1,3 +1,9 @@
+export enum TipoTransacao {
+  ENTRADA = 'ENTRADA',
+  REALOCACAO = 'REALOCACAO',
+  SAIDA = 'SAIDA'
+}
+
 export interface TypesGetClienteContasAnuncio {
   GetContasAssociadasPorCliente: {
     pageInfo: {
@@ -14,6 +20,8 @@ export interface TypesGetClienteContasAnuncio {
       inicioAssociacao: Date;
       fimAssociacao?: Date;
       ativo: boolean;
+      depositoTotal: number;
+      saldo: number;
       contaAnuncio: {
         id: number;
         nome: string;
@@ -35,6 +43,12 @@ export interface TypesSetClienteContaAnuncio {
   };
 }
 
+export interface TypesSetTransacaoContaAnuncio {
+  SetTransacaoClienteContaAnuncio: {
+    id: number
+  };
+}
+
 export type VariablesSetClienteContaAnuncio = {
   clienteId: number;
   contas: {
@@ -43,3 +57,12 @@ export type VariablesSetClienteContaAnuncio = {
     fimAssociacao?: string | null;
   }[];
 };
+
+export type VariablesSetTrasacaoClienteContaAnuncio = {
+  clienteId: number;
+  usuarioId: number;
+  contaOrigemId: number;
+  tipo: TipoTransacao;
+  valor: string;
+  contaDestinoId: number | null;
+}

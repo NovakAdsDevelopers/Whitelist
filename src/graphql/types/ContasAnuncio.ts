@@ -11,9 +11,14 @@ export interface TypesGetContasAnuncio {
       id: string;
       nome: string;
       status: number;
+      saldo: number;
+      depositoTotal: number;
       moeda: string;
       fusoHorario: string;
       gastoTotal: string;
+      limitGasto: string;
+      saldoMeta: string;
+      ultimaSincronizacao: string;
     }[]
   }
 }

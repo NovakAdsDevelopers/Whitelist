@@ -1,12 +1,20 @@
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, from } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
+import axios from 'axios';
 
-// Certifique-se de que a variável de ambiente está definida
-const API_URL = import.meta.env.VITE_APP_API_URL; // Use a variável de ambiente correta
+// Certifique-se de que as variáveis de ambiente estão definidas
+const API_URL = import.meta.env.VITE_APP_API_URL; // URL da API principal
+const VITE_APP_API_META_URL = import.meta.env.VITE_APP_API_META_URL; // URL da API do Meta
 
+// Verifica se as variáveis de ambiente estão configuradas corretamente
 if (!API_URL) {
   console.error('API URL is not defined in environment variables: VITE_APP_API_URL');
   throw new Error('VITE_APP_API_URL is not defined in environment variables');
+}
+
+if (!VITE_APP_API_META_URL) {
+  console.error('API META URL is not defined in environment variables: VITE_APP_API_META_URL');
+  throw new Error('VITE_APP_API_META_URL is not defined in environment variables');
 }
 
 let openModalCallback: (path: any) => void;
@@ -48,12 +56,12 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   }
 });
 
-// Configuração do link HTTP
+// Configuração do link HTTP para a API principal
 const httpLink = new HttpLink({
   uri: API_URL
 });
 
-// Middleware para adicionar o token de autorização
+// Middleware para adicionar o token de autorização à requisição
 const authMiddleware = new ApolloLink((operation, forward) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -70,7 +78,7 @@ const authMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
-// Criação do cliente Apollo
+// Configuração do cliente Apollo para a API principal
 export const client = new ApolloClient({
   cache: new InMemoryCache(),
   link: from([authMiddleware, errorLink, httpLink]),
@@ -78,3 +86,36 @@ export const client = new ApolloClient({
     mutate: { errorPolicy: 'all' }
   }
 });
+
+// Configuração do link HTTP para a API do Meta (caso seja GraphQL)
+const metaHttpLink = new HttpLink({
+  uri: VITE_APP_API_META_URL
+});
+
+// Configuração do cliente Apollo para a API do Meta
+export const metaClient = new ApolloClient({
+  cache: new InMemoryCache(),
+  link: from([authMiddleware, errorLink, metaHttpLink]),
+  defaultOptions: {
+    mutate: { errorPolicy: 'all' }
+  }
+});
+
+// Cliente Axios para a API do Meta (caso seja REST)
+export const metaApi = axios.create({
+  baseURL: VITE_APP_API_META_URL,
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('token') || ''}`
+  }
+});
+
+// Função para fazer uma requisição à API REST do Meta
+export const fetchMetaData = async (endpoint: string) => {
+  try {
+    const response = await metaApi.get(endpoint);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching Meta data:', error);
+    throw error;
+  }
+};

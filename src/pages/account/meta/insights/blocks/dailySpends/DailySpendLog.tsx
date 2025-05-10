@@ -49,7 +49,9 @@ const DailySpendInsightsLog = () => {
         status: item.ativo,
         moeda: item.contaAnuncio.moeda,
         fusoHorario: item.contaAnuncio.fusoHorario,
-        gastoAPI: Number(item.contaAnuncio.gastoAPI)
+        gastoAPI: Number(item.contaAnuncio.gastoAPI),
+        saldo: item.saldo,
+        depositoTotal: item.depositoTotal
       })) || []
     );
   }, [data]);
@@ -104,7 +106,20 @@ const DailySpendInsightsLog = () => {
         meta: { headerClassName: 'min-w-[200px]' }
       },
       {
-        accessorFn: (row) => row.gastoAPI - 1000,
+        accessorFn: (row) => row.depositoTotal,
+        id: 'depositoTotal',
+        header: ({ column }) => <DataGridColumnHeader title="Depósito Total" column={column} />,
+        enableSorting: true,
+        cell: (info) => {
+          const value = info.getValue();
+          return typeof value === 'number'
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+            : '-';
+        },
+        meta: { headerClassName: 'min-w-[200px]' }
+      },
+      {
+        accessorFn: (row) => row.saldo,
         id: 'saldoDisponivel',
         header: ({ column }) => <DataGridColumnHeader title="Saldo Disponível" column={column} />,
         enableSorting: true,

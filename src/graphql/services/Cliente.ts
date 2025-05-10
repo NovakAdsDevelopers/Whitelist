@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client';
-import { GET_CLIENTES, SET_CLIENTE } from '../schemas/Cliente';
-import { TypesGetClientes, TypesSetCliente, VariablesSetCliente } from '../types/Cliente';
+import { GET_CLIENTE_BY_ID, GET_CLIENTES, SET_CLIENTE } from '../schemas/Cliente';
+import { TypesGetClienteByID, TypesGetClientes, TypesSetCliente, VariablesSetCliente } from '../types/Cliente';
 
 /**
  * Hook para buscar clientes com variáveis dinâmicas
@@ -8,6 +8,18 @@ import { TypesGetClientes, TypesSetCliente, VariablesSetCliente } from '../types
 export function useQueryClientes(variables: any) {
   return useQuery<TypesGetClientes>(GET_CLIENTES, {
     variables,
+    fetchPolicy: 'network-only'
+  });
+}
+
+/**
+ * Hook para buscar clientes com variáveis dinâmicas
+ */
+export function useQueryClienteByID(id: number) {
+  return useQuery<TypesGetClienteByID>(GET_CLIENTE_BY_ID, {
+    variables: {
+      getClienteId: id
+    },
     fetchPolicy: 'network-only'
   });
 }

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Column, ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import {
   DataGrid,
@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { ModalMoneyTransfer } from '@/partials/modals/clientes/contas';
 import { useQueryClienteContasAnuncio } from '@/graphql/services/ClienteContaAnuncio';
 import { ModalAssociateAccount } from '@/partials/modals/clientes/associar-conta';
+import { useClient } from '@/auth/providers/ClientProvider';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;
@@ -48,7 +49,10 @@ const ContasAnuncioLog = () => {
         status: item.ativo,
         moeda: item.contaAnuncio.moeda,
         fusoHorario: item.contaAnuncio.fusoHorario,
-        gastoAPI: Number(item.contaAnuncio.gastoAPI)
+        gastoAPI: Number(item.contaAnuncio.gastoAPI),
+        gastoTotal: Number(item.contaAnuncio.gastoTotal),
+        depositoTotal: item.depositoTotal,
+        saldo: item.saldo
       })) || []
     );
   }, [data]);
@@ -90,27 +94,67 @@ const ContasAnuncioLog = () => {
         meta: { headerClassName: 'min-w-[200px]' }
       },
       {
-        accessorFn: (row) => row.gastoAPI,
-        id: 'gastoAPI',
+        accessorFn: (row) => row.gastoTotal,
+        id: 'gastoTotal',
         header: ({ column }) => <DataGridColumnHeader title="Total Gasto" column={column} />,
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
-          return typeof value === 'number'
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+          const numberValue =
+            typeof value === 'string'
+              ? parseInt(value, 10)
+              : typeof value === 'number'
+                ? value
+                : null;
+
+          return typeof numberValue === 'number' && !isNaN(numberValue)
+            ? new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(Math.max(0, numberValue / 100)) // 👈 trata como centavos e evita negativo
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
       {
-        accessorFn: (row) => row.gastoAPI - 1000,
+        accessorFn: (row) => row.depositoTotal,
+        id: 'depositoTotal',
+        header: ({ column }) => <DataGridColumnHeader title="Depósito Total" column={column} />,
+        enableSorting: true,
+        cell: (info) => {
+          const value = info.getValue();
+          const numberValue =
+            typeof value === 'string'
+              ? parseInt(value, 10)
+              : typeof value === 'number'
+                ? value
+                : null;
+
+          return typeof numberValue === 'number' && !isNaN(numberValue)
+            ? new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(Math.max(0, numberValue / 100)) // 👈 formatação com divisão por 100
+            : '-';
+        },
+        meta: { headerClassName: 'min-w-[200px]' }
+      },
+      {
+        accessorFn: (row) => {
+          const deposito = Number(row.depositoTotal) || 0;
+          const gasto = Number(row.gastoTotal) || 0;
+          return deposito - gasto;
+        },
         id: 'saldoDisponivel',
         header: ({ column }) => <DataGridColumnHeader title="Saldo Disponível" column={column} />,
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
           return typeof value === 'number'
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+            ? new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(Math.max(0, value / 100)) // 👈 valor final também tratado como centavos
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
@@ -166,10 +210,18 @@ const ContasAnuncioLog = () => {
     const { table } = useDataGrid();
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
+    const { name, setClientInfo } = useClient();
+    const { id } = useParams();
+
+    useEffect(() => {
+      if (id) {
+        setClientInfo(Number(id)); // Convertendo string para número
+      }
+    }, [id]);
 
     return (
       <div className="card-header flex-wrap px-5 py-4 border-b-0">
-        <h3 className="card-title">Cliente: João da Silva</h3>
+        <h3 className="card-title">{name ? 'Cliente: ' + name : ''}</h3>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <Link to={`/meta/${id}/depositos`}>

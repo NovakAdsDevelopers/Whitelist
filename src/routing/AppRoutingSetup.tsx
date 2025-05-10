@@ -90,6 +90,7 @@ import { ContasAnuncioPage } from '@/pages/account/meta/contas-anuncio';
 import { AnaliseClientePage } from '@/pages/account/meta/usuario-contas-anuncio';
 import { ContasInsightPage } from '@/pages/account/meta/insights';
 import { DepositosPage } from '@/pages/account/meta/usuario-depositos';
+import { ClientProvider } from '@/auth/providers/ClientProvider';
 
 const AppRoutingSetup = (): ReactElement => {
   return (
@@ -154,13 +155,21 @@ const AppRoutingSetup = (): ReactElement => {
             element={<AccountCurrentSessionsPage />}
           />
 
-          <Route path="/meta/dashboard" element={<DashboardMetaPage />} />
-          <Route path="/meta/gastos" element={<AtualizacaoGastosPage />} />
-          <Route path="/meta/clientes" element={<ClientesPage />} />
-          <Route path="/meta/contas-anuncio" element={<ContasAnuncioPage />} />
-          <Route path="/meta/:id/contas-anuncio" element={<AnaliseClientePage />} />
-          <Route path="/meta/:id/depositos" element={<DepositosPage />} />
-
+          <Route
+            path="/meta/*"
+            element={
+              <ClientProvider>
+                <Routes>
+                  <Route path="dashboard" element={<DashboardMetaPage />} />
+                  <Route path="gastos" element={<AtualizacaoGastosPage />} />
+                  <Route path="clientes" element={<ClientesPage />} />
+                  <Route path="contas-anuncio" element={<ContasAnuncioPage />} />
+                  <Route path=":id/contas-anuncio" element={<AnaliseClientePage />} />
+                  <Route path=":id/depositos" element={<DepositosPage />} />
+                </Routes>
+              </ClientProvider>
+            }
+          />
           <Route path="/meta/:id/insights" element={<ContasInsightPage />} />
 
           <Route path="/account/security/security-log" element={<AccountSecurityLogPage />} />

@@ -1,12 +1,14 @@
 import { useMutation, useQuery } from '@apollo/client';
 import {
   GET_CLIENTE_CONTA_ANUNCIO,
-  SET_CLIENTE_CONTA_ANUNCIO
+  SET_CLIENTE_CONTA_ANUNCIO,
+  SET_TRANSACAO_CLIENTE_CONTA_ANUNCIO
 } from '../schemas/ClienteContaAnuncio';
 import {
   TypesGetClienteContasAnuncio,
   TypesSetClienteContaAnuncio,
-  VariablesSetClienteContaAnuncio
+  VariablesSetClienteContaAnuncio,
+  VariablesSetTrasacaoClienteContaAnuncio
 } from '../types/ClienteContaAnuncio';
 
 export function useQueryClienteContasAnuncio(variables: any) {
@@ -67,4 +69,54 @@ export function useSetClienteContasAnuncio(clientID: number) {
   };
 
   return { createClienteContasAnuncio, data, loading, error };
+}
+
+export function useSetTransacaoClienteContasAnuncio(clientID: number) {
+  const [mutate, { data, loading, error }] = useMutation<
+    TypesSetClienteContaAnuncio,
+    { data: VariablesSetTrasacaoClienteContaAnuncio }
+  >(SET_TRANSACAO_CLIENTE_CONTA_ANUNCIO, {
+    fetchPolicy: 'network-only',
+    refetchQueries: () => [
+      {
+        query: GET_CLIENTE_CONTA_ANUNCIO,
+        variables: {
+          clienteId: clientID,
+          pagination: {
+            pagina: 0,
+            quantidade: 100000
+          },
+          status: 'OPEN'
+        }
+      }
+    ],
+    awaitRefetchQueries: true,
+    onCompleted: (data) => {
+      console.log('✅ Cliente e contas associadas com sucesso!', data);
+    }
+  });
+
+  const createTransacaoClienteContasAnuncio = async (variables: VariablesSetTrasacaoClienteContaAnuncio) => {
+    const response = await mutate({
+      variables: { data: variables },
+      refetchQueries: () => [
+        {
+          query: GET_CLIENTE_CONTA_ANUNCIO,
+          variables: {
+            clienteId: clientID,
+            pagination: {
+              pagina: 0,
+              quantidade: 100000
+            },
+            status: 'OPEN'
+          }
+        }
+      ],
+      awaitRefetchQueries: true
+    });
+
+    return response.data;
+  };
+
+  return { createTransacaoClienteContasAnuncio, data, loading, error };
 }

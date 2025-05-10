@@ -21,6 +21,23 @@ export const GET_CLIENTES = gql`
   }
 `;
 
+export const GET_CLIENTE_BY_ID = gql`
+  query GetCliente($getClienteId: Float!) {
+    GetCliente(id: $getClienteId) {
+      id
+      nome
+      email
+      cnpj
+      fee
+      saldo
+      depositoTotal
+      gastoTotal
+      criadoEm
+      atualizadoEm
+    }
+  }
+`;
+
 export const SET_CLIENTE = gql`
   mutation SetCliente($data: ClienteCreateInput!) {
     SetCliente(data: $data) {

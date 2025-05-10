@@ -12,5 +12,4 @@ export function useGetContasAnuncio(variables: any) {
     variables,
     fetchPolicy: 'network-only'
   });
-
 }

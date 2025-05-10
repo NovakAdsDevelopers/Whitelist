@@ -17,6 +17,11 @@ export const GET_CONTA_ANUNCIO = gql`
         moeda
         fusoHorario
         gastoTotal
+        ultimaSincronizacao
+        limiteGasto
+        saldoMeta
+        saldo
+        depositoTotal
       }
     }
   }
