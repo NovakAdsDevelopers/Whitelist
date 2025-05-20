@@ -19,6 +19,7 @@ export const GET_CLIENTE_CONTA_ANUNCIO = gql`
         ativo
         depositoTotal
         saldo
+        gastoTotal
         contaAnuncio {
           id
           nome

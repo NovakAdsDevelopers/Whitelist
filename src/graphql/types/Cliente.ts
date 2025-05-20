@@ -26,6 +26,8 @@ export interface TypesGetClienteByID {
     fee: string;
     saldo: number;
     depositoTotal: number;
+    alocacao: number;
+    saldoCliente: number;
     gastoTotal: number;
     criadoEm: Date;
     atualizadoEm: Date;

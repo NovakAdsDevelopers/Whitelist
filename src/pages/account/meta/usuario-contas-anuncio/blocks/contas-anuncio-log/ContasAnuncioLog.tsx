@@ -15,10 +15,10 @@ import { Input } from '@/components/ui/input';
 import { IContasAnuncioLogData } from './ContasAnuncioLogData'; // Mudança do nome para ClientesLogData
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ModalMoneyTransfer } from '@/partials/modals/clientes/contas';
 import { useQueryClienteContasAnuncio } from '@/graphql/services/ClienteContaAnuncio';
 import { ModalAssociateAccount } from '@/partials/modals/clientes/associar-conta';
 import { useClient } from '@/auth/providers/ClientProvider';
+import ModalMoneyTransfer from '@/partials/modals/clientes/contas/Modal';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;
@@ -50,7 +50,7 @@ const ContasAnuncioLog = () => {
         moeda: item.contaAnuncio.moeda,
         fusoHorario: item.contaAnuncio.fusoHorario,
         gastoAPI: Number(item.contaAnuncio.gastoAPI),
-        gastoTotal: Number(item.contaAnuncio.gastoTotal),
+        gastoTotal: item.gastoTotal,
         depositoTotal: item.depositoTotal,
         saldo: item.saldo
       })) || []
@@ -100,18 +100,12 @@ const ContasAnuncioLog = () => {
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
-          const numberValue =
-            typeof value === 'string'
-              ? parseInt(value, 10)
-              : typeof value === 'number'
-                ? value
-                : null;
 
-          return typeof numberValue === 'number' && !isNaN(numberValue)
+          return typeof value === 'number' && !isNaN(value)
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(Math.max(0, numberValue / 100)) // 👈 trata como centavos e evita negativo
+              }).format(value)
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
@@ -134,18 +128,14 @@ const ContasAnuncioLog = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(Math.max(0, numberValue / 100)) // 👈 formatação com divisão por 100
+              }).format(Math.max(0, numberValue)) // 👈 formatação com divisão por 100
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
       {
-        accessorFn: (row) => {
-          const deposito = Number(row.depositoTotal) || 0;
-          const gasto = Number(row.gastoTotal) || 0;
-          return deposito - gasto;
-        },
         id: 'saldoDisponivel',
+        accessorFn: (row) => row.saldo,
         header: ({ column }) => <DataGridColumnHeader title="Saldo Disponível" column={column} />,
         enableSorting: true,
         cell: (info) => {
@@ -154,9 +144,10 @@ const ContasAnuncioLog = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(Math.max(0, value / 100)) // 👈 valor final também tratado como centavos
+              }).format(value)
             : '-';
         },
+
         meta: { headerClassName: 'min-w-[200px]' }
       },
       {

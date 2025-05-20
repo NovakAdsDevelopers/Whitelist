@@ -22,6 +22,7 @@ export interface TypesGetClienteContasAnuncio {
       ativo: boolean;
       depositoTotal: number;
       saldo: number;
+      gastoTotal: number;
       contaAnuncio: {
         id: number;
         nome: string;
@@ -63,6 +64,6 @@ export type VariablesSetTrasacaoClienteContaAnuncio = {
   usuarioId: number;
   contaOrigemId: number;
   tipo: TipoTransacao;
-  valor: string;
+  valor: number;
   contaDestinoId: number | null;
 }

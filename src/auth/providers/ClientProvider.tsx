@@ -1,5 +1,6 @@
 import { useQueryClienteByID } from '@/graphql/services/Cliente';
-import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { useQueryClienteContasAnuncio } from '@/graphql/services/ClienteContaAnuncio';
+import { createContext, useState, useContext, ReactNode, useEffect, useMemo } from 'react';
 
 interface ClientContextType {
   id: number | null;
@@ -10,6 +11,12 @@ interface ClientContextType {
   saldo: number | null;
   depositoTotal: number | null;
   gastoTotal: number | null;
+
+  alocacaoTotal: number | null;
+  saldoCliente: number | null;
+
+  refetch: any;
+  refetchAssociadas: any;
 
   entries: number;
   expenses: number;
@@ -31,13 +38,34 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
   const [depositoTotal, setDepositoTotal] = useState<number | null>(null);
   const [gastoTotal, setGastoTotal] = useState<number | null>(null);
 
+  const [alocacaoTotal, setAlocacaoTotal] = useState<number | null>(null);
+  const [saldoCliente, setSaldoCliente] = useState<number | null>(null);
+
   const [entries, setEntries] = useState<number>(0);
   const [expenses, setExpenses] = useState<number>(0);
 
   const balance = entries - expenses;
 
   // Usa o hook somente se tiver um ID
-  const { data, loading, error } = useQueryClienteByID(id!);
+  const { data, loading, error, refetch } = useQueryClienteByID(id!);
+
+  const variables = useMemo(
+    () => ({
+      clienteId: id, // Garantindo que o id seja um número
+      pagination: {
+        pagina: 0,
+        quantidade: 100000
+      }
+    }),
+    [id] // Dependência no id para atualizar as variáveis quando ele mudar
+  );
+
+  const {
+    data: dataAssociadas,
+    loading: loadingAssociadas,
+    error: errorAssociadas,
+    refetch: refetchAssociadas
+  } = useQueryClienteContasAnuncio(variables);
 
   // Atualiza o contexto quando os dados forem carregados
   useEffect(() => {
@@ -46,8 +74,25 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
       setEmail(data.GetCliente.email);
       setCnpj(data.GetCliente.cnpj);
       setFee(data.GetCliente.fee);
-      setSaldo(data.GetCliente.saldo);
+      setSaldo(
+        (dataAssociadas?.GetContasAssociadasPorCliente.result.reduce(
+          (total, conta) => total + (conta.depositoTotal || 0),
+          0
+        ) || 0) -
+          (dataAssociadas?.GetContasAssociadasPorCliente.result.reduce(
+            (total, conta) => total + (conta.gastoTotal || 0),
+            0
+          ) || 0)
+      );
       setDepositoTotal(data.GetCliente.depositoTotal);
+      setAlocacaoTotal(
+        dataAssociadas?.GetContasAssociadasPorCliente.result.reduce(
+          (total, conta) => total + (conta.depositoTotal || 0),
+          0 // Valor inicial para a soma
+        ) || 0 // Caso não haja dados, retorna 0
+      );
+      setSaldoCliente(data.GetCliente.saldoCliente);
+
       setGastoTotal(data.GetCliente.gastoTotal);
     }
   }, [data]);
@@ -76,7 +121,13 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
         balance,
         setClientInfo,
         addEntry,
-        addExpense
+        addExpense,
+
+        refetch,
+        refetchAssociadas,
+
+        alocacaoTotal,
+        saldoCliente
       }}
     >
       {children}

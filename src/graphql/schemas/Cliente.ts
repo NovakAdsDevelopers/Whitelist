@@ -30,6 +30,8 @@ export const GET_CLIENTE_BY_ID = gql`
       cnpj
       fee
       saldo
+      alocacao
+      saldoCliente
       depositoTotal
       gastoTotal
       criadoEm

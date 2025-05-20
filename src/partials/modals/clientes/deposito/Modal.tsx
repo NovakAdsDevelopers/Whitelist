@@ -62,16 +62,19 @@ const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreate
   console.log(formattedDate); // Exemplo: "2025-04-15T21:20:40.271Z"
 
   const { createClienteTransacao, loading } = useSetClienteTransacao(usuarioId);
-  const { fee } = useClient();
+  const { fee, refetch } = useClient();
 
   const handleClose = () => onClose();
 
-  const parseAmount = (amount: string) =>
-    parseFloat(amount.replace('R$', '').replace(/\./g, '').replace(',', '.').trim());
+  const parseAmount = (amount: string): number => {
+    const cleaned = amount.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+    const floatValue = parseFloat(cleaned);
+    return parseFloat(floatValue.toFixed(2)); // sempre retorna um number com 2 casas decimais (se existirem)
+  };
 
   const feePercent = tipo === 'ENTRADA' ? Number(fee) / 100 || 0 : 0;
   const valorNumerico = parseAmount(depositAmount);
-  const feeAmount = tipo === 'ENTRADA' ? valorNumerico * feePercent : 0;
+  const feeAmount = tipo === 'ENTRADA' ? Math.round(valorNumerico * feePercent) : 0;
   const totalAmount = tipo === 'ENTRADA' ? valorNumerico - feeAmount : 0;
 
   const handleSubmit = async () => {
@@ -99,6 +102,7 @@ const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreate
       });
 
       toast.success('✅ Movimentação realizada com sucesso!');
+      refetch();
       handleClose();
     } catch (err: any) {
       toast.error('❌ Erro ao realizar movimentação', {
@@ -155,12 +159,17 @@ const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreate
                       {new Intl.NumberFormat('pt-BR', {
                         style: 'currency',
                         currency: 'BRL'
-                      }).format(feeAmount)}
+                      }).format(feeAmount / 100)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Valor Bruto</span>
-                    <span>{depositAmount}</span>
+                    <span>
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                      }).format(valorNumerico / 100)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Valor Aplicado (descontado)</span>
@@ -168,7 +177,7 @@ const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreate
                       {new Intl.NumberFormat('pt-BR', {
                         style: 'currency',
                         currency: 'BRL'
-                      }).format(totalAmount)}
+                      }).format(totalAmount / 100)}
                     </span>
                   </div>
                 </div>

@@ -15,10 +15,10 @@ import { Input } from '@/components/ui/input';
 import { IInsightsLogData } from './InsightsLogData'; // Mudança do nome para ClientesLogData
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ModalMoneyTransfer } from '@/partials/modals/clientes/contas';
 import { useQueryClienteContasAnuncio } from '@/graphql/services/ClienteContaAnuncio';
 import { TypesGetClienteContasAnuncio } from '@/graphql/types/ClienteContaAnuncio';
 import { ModalAssociateAccount } from '@/partials/modals/clientes/associar-conta';
+import ModalMoneyTransfer from '@/partials/modals/clientes/contas/Modal';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;

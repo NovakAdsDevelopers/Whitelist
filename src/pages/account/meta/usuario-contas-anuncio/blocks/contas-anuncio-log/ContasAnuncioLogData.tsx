@@ -8,6 +8,7 @@ interface IContasAnuncioLogData {
   gastoTotal: number;
   depositoTotal: number;
   saldo: number;
+
 }
 
 

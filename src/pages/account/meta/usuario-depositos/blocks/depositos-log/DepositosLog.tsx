@@ -25,7 +25,8 @@ interface IColumnFilterProps<TData, TValue> {
 
 const DepositosLog = () => {
   const { id } = useParams();
-
+  const { refetch } = useClient()
+  
   const variables = useMemo(
     () => ({
       clienteId: Number(id),
@@ -132,7 +133,9 @@ const DepositosLog = () => {
         cell: (info) => {
           const value = info.getValue();
           return typeof value === 'number'
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                value 
+              )
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px] text-center' }
