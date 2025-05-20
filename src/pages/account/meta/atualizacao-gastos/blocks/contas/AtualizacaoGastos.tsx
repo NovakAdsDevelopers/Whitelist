@@ -88,6 +88,7 @@ const ContasTable = () => {
         moeda: conta.moeda,
         fusoHorario: conta.fusoHorario,
         gastoTotal: conta.gastoTotal,
+        gastoAPI: Number(conta.gastoAPI),
         saldoMeta: conta.saldoMeta,
         limitGasto: conta.limitGasto,
         saldo: conta.saldo,
@@ -135,7 +136,7 @@ const ContasTable = () => {
       {
         accessorFn: (row) => {
           const deposito = Number(row.depositoTotal) || 0;
-          const gasto = Number(row.gastoTotal) || 0;
+          const gasto = Number(row.gastoAPI) || 0;
           return deposito - gasto; // centavos
         },
         id: 'saldoDisponivel',
@@ -147,7 +148,7 @@ const ContasTable = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(value / 100) // 💰 convertido de centavos para reais
+              }).format(value) // 💰 convertido de centavos para reais
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }

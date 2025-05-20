@@ -17,6 +17,7 @@ export const GET_CONTA_ANUNCIO = gql`
         moeda
         fusoHorario
         gastoTotal
+        gastoAPI
         ultimaSincronizacao
         limiteGasto
         saldoMeta

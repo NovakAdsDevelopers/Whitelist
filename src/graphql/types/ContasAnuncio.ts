@@ -16,6 +16,7 @@ export interface TypesGetContasAnuncio {
       moeda: string;
       fusoHorario: string;
       gastoTotal: string;
+      gastoAPI: string;
       limitGasto: string;
       saldoMeta: string;
       ultimaSincronizacao: string;

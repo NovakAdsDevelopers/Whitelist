@@ -7,6 +7,7 @@ export interface IAtualizaçãoContasAnuncioLogData {
   moeda: string;
   fusoHorario: string;
   gastoTotal: string;
+  gastoAPI: number;
   saldoMeta: string;
   limitGasto: string;
   ultimaSincronizacao: string;
