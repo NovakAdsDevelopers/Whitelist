@@ -90,7 +90,7 @@ const ContasAnuncioLog = () => {
     {
       accessorFn: (row) => Number(row.gastoTotal), // Total Gasto
       id: 'totalGasto',
-      header: ({ column }) => <DataGridColumnHeader title="Total Gasto" column={column} />,
+      header: ({ column }) => <DataGridColumnHeader title="Total Gastos" column={column} />,
       enableSorting: true,
       cell: (info) => {
         const value = info.getValue();

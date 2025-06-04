@@ -132,6 +132,15 @@ const SidebarPrimary = () => {
       <div ref={footerRef} className="flex flex-col gap-5 items-center shrink-0">
         <div className="flex flex-col gap-1.5">
           <Menu>
+            <MenuItem trigger="click">
+              <MenuToggle 
+              className="btn btn-icon btn-icon-xl relative rounded-md size-9 border border-transparent hover:bg-light hover:text-primary hover:border-gray-200 dropdown-open:bg-gray-200 text-gray-600">
+                <KeenIcon icon="book-square" />
+              </MenuToggle>
+            </MenuItem>
+          </Menu>
+
+          <Menu>
             <MenuItem
               ref={itemChatRef}
               onShow={handleDropdownChatShow}
@@ -201,9 +210,9 @@ const SidebarPrimary = () => {
               ]
             }}
           >
-              <MenuToggle className="btn btn-icon btn-icon-xl relative rounded-md size-9 border border-transparent hover:bg-light hover:text-primary hover:border-gray-200 dropdown-open:bg-gray-200 text-gray-600">
-                <KeenIcon icon="user" />
-              </MenuToggle>
+            <MenuToggle className="btn btn-icon btn-icon-xl relative rounded-md size-9 border border-transparent hover:bg-light hover:text-primary hover:border-gray-200 dropdown-open:bg-gray-200 text-gray-600">
+              <KeenIcon icon="user" />
+            </MenuToggle>
             {DropdownUser({ menuItemRef: itemUserRef })}
           </MenuItem>
         </Menu>

@@ -67,9 +67,8 @@ const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreate
   const handleClose = () => onClose();
 
   const parseAmount = (amount: string): number => {
-    const cleaned = amount.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-    const floatValue = parseFloat(cleaned);
-    return parseFloat(floatValue.toFixed(2)); // sempre retorna um number com 2 casas decimais (se existirem)
+    const cleaned = amount.replace(/\D/g, ''); // remove tudo que não for dígito
+    return Number(cleaned);
   };
 
   const feePercent = tipo === 'ENTRADA' ? Number(fee) / 100 || 0 : 0;
@@ -78,36 +77,41 @@ const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreate
   const totalAmount = tipo === 'ENTRADA' ? valorNumerico - feeAmount : 0;
 
   const handleSubmit = async () => {
+    const valorEmCentavos = parseAmount(depositAmount);
+
     if (
       !clienteId ||
       !usuarioId ||
       !tipo ||
-      isNaN(valorNumerico) ||
-      valorNumerico <= 0 ||
+      isNaN(valorEmCentavos) ||
+      valorEmCentavos <= 0 ||
       !dataTransacao
     ) {
       toast.error('Preencha todos os campos corretamente');
       return;
     }
 
-    try {
-      await createClienteTransacao({
-        clienteId,
-        usuarioId,
-        tipo: tipo.toUpperCase(),
-        valor: valorNumerico,
-        fee: tipo === 'ENTRADA' ? (fee ? `${fee}%` : '0') : null,
-        valorAplicado: tipo === 'ENTRADA' ? totalAmount : null,
-        dataTransacao: formattedDate
-      });
+    const feeValue = tipo === 'ENTRADA' ? (fee ? `${fee}%` : '0') : null;
+    const valorAplicado =
+      tipo === 'ENTRADA' ? valorEmCentavos - Math.round(valorEmCentavos * (feePercent || 0)) : null;
 
-      toast.success('✅ Movimentação realizada com sucesso!');
-      refetch();
-      handleClose();
-    } catch (err: any) {
-      toast.error('❌ Erro ao realizar movimentação', {
-        description: err.message || 'Ocorreu um erro inesperado.'
-      });
+    const payload = {
+      clienteId,
+      usuarioId,
+      tipo: tipo.toUpperCase(),
+      valor: valorEmCentavos,
+      fee: feeValue,
+      valorAplicado,
+      dataTransacao: formattedDate
+    };
+
+    console.log('Enviando payload:', payload);
+
+    try {
+      await createClienteTransacao(payload);
+      toast.success('Transação criada com sucesso!');
+    } catch (err) {
+      toast.error('Erro ao criar transação');
     }
   };
 

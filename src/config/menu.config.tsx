@@ -15,7 +15,7 @@ export const MENU_SIDEBAR: TMenuConfig = [
         path: '/meta/clientes'
       },
       {
-        title: 'Contas de Anuncio',
+        title: 'Contas de Anúncio',
         path: '/meta/contas-anuncio'
       },
       {

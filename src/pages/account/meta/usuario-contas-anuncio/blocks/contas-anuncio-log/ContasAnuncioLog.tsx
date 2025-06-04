@@ -19,6 +19,7 @@ import { useQueryClienteContasAnuncio } from '@/graphql/services/ClienteContaAnu
 import { ModalAssociateAccount } from '@/partials/modals/clientes/associar-conta';
 import { useClient } from '@/auth/providers/ClientProvider';
 import ModalMoneyTransfer from '@/partials/modals/clientes/contas/Modal';
+import { Database, Loader2 } from 'lucide-react';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;
@@ -38,7 +39,7 @@ const ContasAnuncioLog = () => {
     []
   );
 
-  const { data } = useQueryClienteContasAnuncio(variables);
+  const { data, loading } = useQueryClienteContasAnuncio(variables);
 
   // Formatando os dados para o DataGrid
   const contasAnunciosData: IContasAnuncioLogData[] = useMemo(() => {
@@ -56,6 +57,8 @@ const ContasAnuncioLog = () => {
       })) || []
     );
   }, [data]);
+
+  console.log(contasAnunciosData);
 
   // Componente de filtro para a coluna
   const ColumnInputFilter = <TData, TValue>({ column }: IColumnFilterProps<TData, TValue>) => {
@@ -105,7 +108,7 @@ const ContasAnuncioLog = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(value)
+              }).format(value / 100)
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
@@ -128,7 +131,7 @@ const ContasAnuncioLog = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(Math.max(0, numberValue)) // 👈 formatação com divisão por 100
+              }).format(Math.max(0, numberValue / 100)) // 👈 formatação com divisão por 100
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
@@ -144,7 +147,7 @@ const ContasAnuncioLog = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(value)
+              }).format(value / 100)
             : '-';
         },
 
@@ -242,16 +245,49 @@ const ContasAnuncioLog = () => {
   };
 
   return (
-    <DataGrid
-      columns={columns}
-      data={contasAnunciosData}
-      rowSelection={true}
-      onRowSelectionChange={handleRowSelection}
-      pagination={{ size: 10 }}
-      sorting={[{ id: 'timestamp', desc: false }]}
-      toolbar={<Toolbar />}
-      layout={{ card: true }}
-    />
+    <>
+      {loading ? (
+         <DataGrid
+          columns={columns}
+          data={contasAnunciosData}
+          rowSelection={true}
+          onRowSelectionChange={handleRowSelection}
+          pagination={{ size: 10 }}
+          sorting={[{ id: 'timestamp', desc: false }]}
+          toolbar={<Toolbar />}
+          layout={{ card: true }}
+          messages={{
+            loading: true,
+            empty: (
+              <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
+                <Loader2 className="animate-spin text-muted-foreground" />
+                Carregando contas de anúncio...
+              </div>
+            )
+          }}
+        />
+      ) : (
+        <DataGrid
+          columns={columns}
+          data={contasAnunciosData}
+          rowSelection={true}
+          onRowSelectionChange={handleRowSelection}
+          pagination={{ size: 10 }}
+          sorting={[{ id: 'timestamp', desc: false }]}
+          toolbar={<Toolbar />}
+          layout={{ card: true }}
+          messages={{
+            loading: true,
+            empty: (
+              <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
+                <Database className="text-muted-foreground pb-2" />
+                Nenhum cliente encontrado
+              </div>
+            )
+          }}
+        />
+      )}
+    </>
   );
 };
 

@@ -135,9 +135,13 @@ const ContasTable = () => {
       },
       {
         accessorFn: (row) => {
-          const deposito = Number(row.depositoTotal) || 0;
-          const gasto = Number(row.gastoAPI) || 0;
-          return deposito - gasto; // centavos
+          const deposito = Math.round(Number(row.depositoTotal)) || 0;
+
+          // NÃO multiplica por 100! Já está em centavos.
+          const gasto = Math.round(Number(row.gastoAPI)) || 0;
+
+          // Subtração correta: centavos - centavos
+          return deposito - gasto;
         },
         id: 'saldoDisponivel',
         header: ({ column }) => <DataGridColumnHeader title="Saldo Disponível" column={column} />,
@@ -148,11 +152,12 @@ const ContasTable = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(value) // 💰 convertido de centavos para reais
+              }).format(value / 100) // Exibe em reais
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
+
       {
         accessorKey: 'saldoMeta',
         accessorFn: (row) => Number(row.saldoMeta) || 0,
@@ -163,7 +168,7 @@ const ContasTable = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(value / 100)
+              }).format(value)
             : '-';
         },
         meta: { headerClassName: 'min-w-[130px]' }

@@ -17,6 +17,7 @@ import { ModalCreateCliente } from '@/partials/modals/clientes/create';
 import { Link } from 'react-router-dom';
 import { useQueryClientes } from '@/graphql/services/Cliente';
 import { useClient } from '@/auth/providers/ClientProvider';
+import { Loader2, Database } from 'lucide-react';
 
 // ✅ Componente separado para evitar hook em render dinâmica
 const ClienteLinkCell: React.FC<{ id: number }> = ({ id }) => {
@@ -49,7 +50,7 @@ const ClientesLog = () => {
     []
   );
 
-  const { data } = useQueryClientes(variables);
+  const { data, loading } = useQueryClientes(variables);
 
   const clientesData: IClienteLogData[] =
     data?.GetClientes?.result?.map((cliente) => ({
@@ -151,16 +152,49 @@ const ClientesLog = () => {
   };
 
   return (
-    <DataGrid
-      columns={columns}
-      data={clientesData}
-      rowSelection={true}
-      onRowSelectionChange={handleRowSelection}
-      pagination={{ size: 10 }}
-      sorting={[{ id: 'timestamp', desc: false }]}
-      toolbar={<Toolbar />}
-      layout={{ card: true }}
-    />
+    <>
+      {loading ? (
+        <DataGrid
+          columns={columns}
+          data={clientesData}
+          rowSelection={true}
+          onRowSelectionChange={handleRowSelection}
+          pagination={{ size: 10 }}
+          sorting={[{ id: 'timestamp', desc: false }]}
+          toolbar={<Toolbar />}
+          layout={{ card: true }}
+          messages={{
+            loading: true,
+            empty: (
+              <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
+                <Loader2 className="animate-spin text-muted-foreground" />
+                Carregando clientes...
+              </div>
+            )
+          }}
+        />
+      ) : (
+        <DataGrid
+          columns={columns}
+          data={clientesData}
+          rowSelection={true}
+          onRowSelectionChange={handleRowSelection}
+          pagination={{ size: 10 }}
+          sorting={[{ id: 'timestamp', desc: false }]}
+          toolbar={<Toolbar />}
+          layout={{ card: true }}
+          messages={{
+            loading: true,
+            empty: (
+              <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
+                <Database className="text-muted-foreground pb-2" />
+                Nenhum cliente encontrado
+              </div>
+            )
+          }}
+        />
+      )}
+    </>
   );
 };
 

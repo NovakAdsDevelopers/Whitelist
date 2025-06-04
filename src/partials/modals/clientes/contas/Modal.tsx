@@ -58,7 +58,7 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
   const [step, setStep] = useState(1);
   const [tipo, setTipo] = useState<TipoTransacao | null>(null);
   const [loading, setLoading] = useState(false);
-  const { refetch, refetchAssociadas} = useClient()
+  const { refetch, refetchAssociadas } = useClient();
   const { id } = useParams<{ id: string }>();
   const clienteId = Number(id);
 
@@ -110,18 +110,22 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
 
       setLoading(true);
       try {
-        await createTransacaoClienteContasAnuncio({
+        const payload = {
           clienteId,
           contaOrigemId: values.contaOrigemId,
           contaDestinoId: tipo === 'REALOCACAO' ? values.contaDestinoId : null,
           tipo,
-          valor: values.valor, // número correto, ex: 20000
+          valor: Math.round(values.valor * 100), // ✅ conversão para centavos
           usuarioId: currentUser!.id
-        });
+        };
+
+        console.log('Payload que será enviado:', payload);
+
+        await createTransacaoClienteContasAnuncio(payload); // ✅ envio ao backend
 
         toast.success('✅ Transação realizada com sucesso!');
-        refetch()
-        refetchAssociadas()
+        refetch();
+        refetchAssociadas();
         setStatus(null);
         resetForm();
         handleClose();
@@ -181,12 +185,11 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
               onChange={(e) => formik.setFieldValue('contaOrigemId', Number(e.target.value))}
             >
               <option value="">Selecione</option>
-              {data?.GetContasAssociadasPorCliente.result
-                .map((conta: any) => (
-                  <option key={conta.id} value={Number(conta.id)}>
-                    {conta.contaAnuncio.nome}
-                  </option>
-                ))}
+              {data?.GetContasAssociadasPorCliente.result.map((conta: any) => (
+                <option key={conta.id} value={Number(conta.id)}>
+                  {conta.contaAnuncio.nome}
+                </option>
+              ))}
             </select>
           </div>
 
