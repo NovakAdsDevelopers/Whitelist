@@ -11,13 +11,13 @@ const AnaliseClientePage = () => {
 
   return (
     <Fragment>
-      <div className="relative w-full bg-white py-2">
+      <div className="container-fixed flex justify-start pb-4">
         <Link
-          to={'/meta/clientes'}
-          className="group absolute left-10 top-[-50px] flex items-center justify-center gap-1"
+          to={`/meta/clientes`} // <-- usa o ID na URL
+          className="flex items-center justify-center gap-2"
         >
-          <KeenIcon icon="exit-left" className="text-xl" />
-          <span className="text-lg group-hover:underline">Voltar</span>
+          <KeenIcon icon="exit-left" className="text-lg" />
+          <span className="text-md group-hover:underline">Voltar</span>
         </Link>
       </div>
 
