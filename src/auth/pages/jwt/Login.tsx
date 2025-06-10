@@ -8,6 +8,7 @@ import { toAbsoluteUrl } from '@/utils';
 import { useAuthContext } from '@/auth';
 import { useLayout } from '@/providers';
 import { Alert } from '@/components';
+import { motion } from 'framer-motion';
 
 const loginSchema = Yup.object().shape({
   email: Yup.string()
@@ -71,11 +72,19 @@ const Login = () => {
   };
 
   return (
-    <div className="card max-w-[390px] w-full">
-      <form
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
+      className="card max-w-[390px] w-full"
+    >
+      <motion.form
         className="card-body flex flex-col gap-5 p-10"
         onSubmit={formik.handleSubmit}
         noValidate
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.8, ease: 'easeOut' }}
       >
         <div className="text-center mb-2.5">
           <h3 className="text-lg font-semibold text-gray-900 leading-none mb-2.5">Login</h3>
@@ -185,8 +194,8 @@ const Login = () => {
         >
           {loading ? 'Por favor, aguarde...' : 'Login'}
         </button>
-      </form>
-    </div>
+      </motion.form>
+    </motion.div>
   );
 };
 

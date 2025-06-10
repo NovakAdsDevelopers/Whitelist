@@ -9,6 +9,7 @@ import { toAbsoluteUrl } from '@/utils';
 import { Alert, KeenIcon } from '@/components';
 import { useLayout } from '@/providers';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 const initialValues = {
   nome: '',
@@ -53,13 +54,12 @@ const Signup = () => {
           throw new Error('JWTProvider is required for this form.');
         }
         await register(values.nome, values.email, values.password);
-        // Exibe o toast com barra de progresso de 3s
+
         toast.message('✅ Cadastro realizado com sucesso!', {
           description: `Bem-vindo(a), ${values.nome}!`,
-          duration: 3000 // 3 segundos
+          duration: 3000
         });
 
-        // Aguarda os 3s antes de navegar
         setTimeout(() => {
           navigate(from, { replace: true });
         }, 3000);
@@ -81,11 +81,19 @@ const Signup = () => {
   };
 
   return (
-    <div className="card max-w-[370px] w-full">
-      <form
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
+      className="card max-w-[370px] w-full"
+    >
+      <motion.form
         className="card-body flex flex-col gap-5 p-10"
         noValidate
         onSubmit={formik.handleSubmit}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.8, ease: 'easeOut' }}
       >
         <div className="text-center mb-2.5">
           <h3 className="text-lg font-semibold text-gray-900 leading-none mb-2.5">Cadastrar-se</h3>
@@ -102,22 +110,13 @@ const Signup = () => {
 
         <div className="grid grid-cols-2 gap-2.5">
           <a href="#" className="btn btn-light btn-sm justify-center disabled">
-            <img
-              src={toAbsoluteUrl('/media/brand-logos/google.svg')}
-              className="size-3.5 shrink-0"
-            />
+            <img src={toAbsoluteUrl('/media/brand-logos/google.svg')} className="size-3.5 shrink-0" />
             Use Google
           </a>
 
           <a href="#" className="btn btn-light btn-sm justify-center disabled">
-            <img
-              src={toAbsoluteUrl('/media/brand-logos/apple-black.svg')}
-              className="size-3.5 shrink-0 dark:hidden"
-            />
-            <img
-              src={toAbsoluteUrl('/media/brand-logos/apple-white.svg')}
-              className="size-3.5 shrink-0 light:hidden"
-            />
+            <img src={toAbsoluteUrl('/media/brand-logos/apple-black.svg')} className="size-3.5 shrink-0 dark:hidden" />
+            <img src={toAbsoluteUrl('/media/brand-logos/apple-white.svg')} className="size-3.5 shrink-0 light:hidden" />
             Use Apple
           </a>
         </div>
@@ -138,19 +137,14 @@ const Signup = () => {
               type="text"
               autoComplete="off"
               {...formik.getFieldProps('nome')}
-              className={clsx(
-                'form-control bg-transparent',
-                { 'is-invalid': formik.touched.nome && formik.errors.nome },
-                {
-                  'is-valid': formik.touched.nome && !formik.errors.nome
-                }
-              )}
+              className={clsx('form-control bg-transparent', {
+                'is-invalid': formik.touched.nome && formik.errors.nome,
+                'is-valid': formik.touched.nome && !formik.errors.nome
+              })}
             />
           </label>
           {formik.touched.nome && formik.errors.nome && (
-            <span role="alert" className="text-danger text-xs mt-1">
-              {formik.errors.nome}
-            </span>
+            <span role="alert" className="text-danger text-xs mt-1">{formik.errors.nome}</span>
           )}
         </div>
 
@@ -162,19 +156,14 @@ const Signup = () => {
               type="email"
               autoComplete="off"
               {...formik.getFieldProps('email')}
-              className={clsx(
-                'form-control bg-transparent',
-                { 'is-invalid': formik.touched.email && formik.errors.email },
-                {
-                  'is-valid': formik.touched.email && !formik.errors.email
-                }
-              )}
+              className={clsx('form-control bg-transparent', {
+                'is-invalid': formik.touched.email && formik.errors.email,
+                'is-valid': formik.touched.email && !formik.errors.email
+              })}
             />
           </label>
           {formik.touched.email && formik.errors.email && (
-            <span role="alert" className="text-danger text-xs mt-1">
-              {formik.errors.email}
-            </span>
+            <span role="alert" className="text-danger text-xs mt-1">{formik.errors.email}</span>
           )}
         </div>
 
@@ -186,28 +175,18 @@ const Signup = () => {
               placeholder="Enter Password"
               autoComplete="off"
               {...formik.getFieldProps('password')}
-              className={clsx(
-                'form-control bg-transparent',
-                {
-                  'is-invalid': formik.touched.password && formik.errors.password
-                },
-                {
-                  'is-valid': formik.touched.password && !formik.errors.password
-                }
-              )}
+              className={clsx('form-control bg-transparent', {
+                'is-invalid': formik.touched.password && formik.errors.password,
+                'is-valid': formik.touched.password && !formik.errors.password
+              })}
             />
             <button className="btn btn-icon" onClick={togglePassword}>
               <KeenIcon icon="eye" className={clsx('text-gray-500', { hidden: showPassword })} />
-              <KeenIcon
-                icon="eye-slash"
-                className={clsx('text-gray-500', { hidden: !showPassword })}
-              />
+              <KeenIcon icon="eye-slash" className={clsx('text-gray-500', { hidden: !showPassword })} />
             </button>
           </label>
           {formik.touched.password && formik.errors.password && (
-            <span role="alert" className="text-danger text-xs mt-1">
-              {formik.errors.password}
-            </span>
+            <span role="alert" className="text-danger text-xs mt-1">{formik.errors.password}</span>
           )}
         </div>
 
@@ -238,8 +217,8 @@ const Signup = () => {
         >
           {loading ? 'Por favor, aguarde...' : 'Cadastrar-se'}
         </button>
-      </form>
-    </div>
+      </motion.form>
+    </motion.div>
   );
 };
 

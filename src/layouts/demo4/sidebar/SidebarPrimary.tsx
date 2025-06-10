@@ -98,7 +98,7 @@ const SidebarPrimary = () => {
         <Link to="/">
           <img
             width={40}
-            src={toAbsoluteUrl('/media/app/logo-novak.jpg')}
+            src={toAbsoluteUrl('/media/images/new/logo.png')}
             className="dark:hidden min-h-[30px]"
           />
           <img
