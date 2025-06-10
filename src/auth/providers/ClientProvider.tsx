@@ -74,28 +74,22 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
       setEmail(data.GetCliente.email);
       setCnpj(data.GetCliente.cnpj);
       setFee(data.GetCliente.fee);
-      setSaldo(
-        (dataAssociadas?.GetContasAssociadasPorCliente.result.reduce(
-          (total, conta) => total + (conta.depositoTotal || 0),
-          0
-        ) || 0) -
-          (dataAssociadas?.GetContasAssociadasPorCliente.result.reduce(
-            (total, conta) => total + (conta.gastoTotal || 0),
-            0
-          ) || 0)
-      );
-      setDepositoTotal(data.GetCliente.depositoTotal);
-      setAlocacaoTotal(
-        dataAssociadas?.GetContasAssociadasPorCliente.result.reduce(
-          (total, conta) => total + (conta.depositoTotal || 0),
-          0 // Valor inicial para a soma
-        ) || 0 // Caso não haja dados, retorna 0
-      );
-      setSaldoCliente(data.GetCliente.saldoCliente);
 
+      const contas = dataAssociadas?.GetContasAssociadasPorCliente?.result ?? [];
+
+      const totalDepositos = contas.reduce((total, conta) => total + (conta.depositoTotal ?? 0), 0);
+
+      const totalGastos = contas.reduce((total, conta) => total + (conta.gastoTotal ?? 0), 0);
+
+      const saldoCalculado = totalDepositos - totalGastos;
+
+      setSaldo(saldoCalculado); // saldo correto com negativos respeitados
+      setDepositoTotal(data.GetCliente.depositoTotal);
+      setAlocacaoTotal(totalDepositos);
+      setSaldoCliente(data.GetCliente.saldoCliente);
       setGastoTotal(data.GetCliente.gastoTotal);
     }
-  }, [data]);
+  }, [data, dataAssociadas]);
 
   const setClientInfo = (clientId: number) => {
     console.log(clientId + ':ID RECEBIDO');

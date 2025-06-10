@@ -18,6 +18,8 @@ import { toast } from 'sonner';
 import { TipoTransacao } from '@/graphql/types/ClienteContaAnuncio';
 import { AuthContext } from '@/auth/providers/JWTProvider';
 import { useClient } from '@/auth/providers/ClientProvider';
+import { useQueryClienteByID } from '@/graphql/services/Cliente';
+import { KeenIcon } from '@/components';
 
 interface IModalCreateClienteProps {
   open: boolean;
@@ -76,6 +78,7 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
 
   const { data } = useQueryClienteContasAnuncio(variables);
   const { createTransacaoClienteContasAnuncio } = useSetTransacaoClienteContasAnuncio(clienteId);
+  const { data: dataCliente } = useQueryClienteByID(clienteId);
   const authContext = useContext(AuthContext);
   const currentUser = authContext?.currentUser;
 
@@ -163,6 +166,10 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
     }
   }, [open]);
 
+  const isValorMaiorQueSaldoCliente =
+    tipo === 'ENTRADA' &&
+    formik.values.valor > Number(dataCliente?.GetCliente.saldoCliente || 0) / 100;
+
   const renderStepContent = () => {
     if (step === 1) {
       return (
@@ -195,6 +202,18 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
     return (
       <form onSubmit={formik.handleSubmit} className="w-full">
         <div className="w-full flex flex-col">
+          {tipo === 'ENTRADA' && (
+            <div className="flex justify-end items-center gap-1">
+              <KeenIcon icon="dollar" className="text-primary text-lg" />
+              <span>
+                Saldo disponivel:{' '}
+                {(Number(dataCliente?.GetCliente.saldoCliente || 0) / 100).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                })}
+              </span>
+            </div>
+          )}
           <div className="w-full flex flex-col gap-2 mb-4">
             <label htmlFor="contaOrigemId">
               {tipo === 'REALOCACAO' ? 'Conta de origem:' : 'Conta:'}
@@ -216,8 +235,13 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
 
             {/* Exibe o saldo se aplicável */}
             {saldoContaOrigem !== null && (
-              <p className="text-sm text-gray-600 mt-1">
-                Saldo disponível: {saldoContaOrigem.toLocaleString('pt-BR', {
+              <p
+                className={`text-sm mt-1 ${
+                  Number(saldoContaOrigem) < 0 ? 'text-red-600' : 'text-gray-600'
+                }`}
+              >
+                Saldo disponível:{' '}
+                {(Number(saldoContaOrigem || 0) / 100).toLocaleString('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'
                 })}
@@ -231,9 +255,10 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
               <select
                 id="contaDestinoId"
                 name="contaDestinoId"
-                className="w-full rounded-md border px-4 py-2 shadow-sm"
+                className="w-full rounded-md border px-4 py-2 shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                 value={formik.values.contaDestinoId ?? ''}
                 onChange={(e) => formik.setFieldValue('contaDestinoId', Number(e.target.value))}
+                disabled={Number(saldoContaOrigem) < 0}
               >
                 <option value="">Selecione</option>
                 {data?.GetContasAssociadasPorCliente.result.map((conta: any) => (
@@ -242,6 +267,11 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
                   </option>
                 ))}
               </select>
+              {Number(saldoContaOrigem) < 0 && (
+                <p className="text-xs text-red-600 mt-1">
+                  Conta de origem sem saldo disponível para realocação.
+                </p>
+              )}
             </div>
           )}
 
@@ -254,11 +284,23 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
           </div>
 
           {formik.status && <div className="text-sm text-red-500 mt-2">{formik.status}</div>}
+          {isValorMaiorQueSaldoCliente && (
+            <p className="text-xs mt-2 text-red-600">
+              O valor inserido é maior que o saldo disponível do cliente.
+            </p>
+          )}
 
           <hr className="mt-4" />
         </div>
         <div className="flex justify-end mt-4">
-          <Button type="submit" disabled={loading}>
+          <Button
+            type="submit"
+            disabled={
+              loading ||
+              (tipo !== 'ENTRADA' && Number(saldoContaOrigem) < 0) ||
+              isValorMaiorQueSaldoCliente
+            }
+          >
             {loading ? 'Processando...' : 'Confirmar'}
           </Button>
         </div>
