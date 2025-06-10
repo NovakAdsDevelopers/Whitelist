@@ -23,7 +23,7 @@ interface IDropdownUserProps {
 
 const DropdownUser = ({ menuItemRef }: IDropdownUserProps) => {
   const { settings, storeSettings } = useSettings();
-  const { logout } = useAuthContext();
+  const { logout, currentUser } = useAuthContext();
   const { isRTL } = useLanguage();
 
   const handleThemeMode = (event: ChangeEvent<HTMLInputElement>) => {
@@ -33,6 +33,8 @@ const DropdownUser = ({ menuItemRef }: IDropdownUserProps) => {
       themeMode: newThemeMode
     });
   };
+
+  console.log(currentUser);
 
   const buildHeader = () => {
     return (
@@ -47,17 +49,17 @@ const DropdownUser = ({ menuItemRef }: IDropdownUserProps) => {
               to="/account/hoteme/get-stard"
               className="text-sm text-gray-800 hover:text-primary font-semibold leading-none"
             >
-              Cody Fisher
+              {!currentUser?.nome ? '' : currentUser?.nome}
             </Link>
             <a
-              href="mailto:c.fisher@gmail.com"
+              href={`mailto:${currentUser?.email}`}
               className="text-xs text-gray-600 hover:text-primary font-medium leading-none"
             >
-              c.fisher@gmail.com
+              {currentUser?.email}
             </a>
+            {/* <span className="badge badge-xs badge-primary badge-outline">Pro</span> */}
           </div>
         </div>
-        <span className="badge badge-xs badge-primary badge-outline">Pro</span>
       </div>
     );
   };
@@ -67,7 +69,7 @@ const DropdownUser = ({ menuItemRef }: IDropdownUserProps) => {
       <Fragment>
         <MenuSeparator />
         <div className="flex flex-col">
-          <MenuItem
+          {/* <MenuItem
             toggle="dropdown"
             trigger="hover"
             dropdownProps={{
@@ -187,8 +189,8 @@ const DropdownUser = ({ menuItemRef }: IDropdownUserProps) => {
               </MenuTitle>
             </MenuLink>
           </MenuItem>
-          <DropdownUserLanguages menuItemRef={menuItemRef} />
-          <MenuSeparator />
+          <DropdownUserLanguages menuItemRef={menuItemRef} /> */}
+          {/* <MenuSeparator /> */}
         </div>
       </Fragment>
     );

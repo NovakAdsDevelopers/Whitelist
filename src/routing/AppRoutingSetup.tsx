@@ -97,7 +97,17 @@ const AppRoutingSetup = (): ReactElement => {
     <Routes>
       <Route element={<RequireAuth />}>
         <Route element={<Demo4Layout />}>
-          <Route path="/" element={<DefaultPage />} />
+          {/* Página inicial com ClientProvider */}
+          <Route
+            path="/"
+            element={
+              <ClientProvider>
+                <AtualizacaoGastosPage /> {/* ou outra página inicial que você quiser renderizar */}
+              </ClientProvider>
+            }
+          />
+
+          {/* Demais rotas protegidas */}
           <Route path="/dark-sidebar" element={<Demo1DarkSidebarPage />} />
           <Route path="/public-profile/profiles/default" element={<ProfileDefaultPage />} />
           <Route path="/public-profile/profiles/creator" element={<ProfileCreatorPage />} />
@@ -118,6 +128,8 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/public-profile/campaigns/card" element={<CampaignsCardPage />} />
           <Route path="/public-profile/campaigns/list" element={<CampaignsListPage />} />
           <Route path="/public-profile/empty" element={<ProfileEmptyPage />} />
+
+          {/* Conta */}
           <Route path="/account/home/get-started" element={<AccountGetStartedPage />} />
           <Route path="/account/home/user-profile" element={<AccountUserProfilePage />} />
           <Route path="/account/home/company-profile" element={<AccountCompanyProfilePage />} />
@@ -154,24 +166,6 @@ const AppRoutingSetup = (): ReactElement => {
             path="/account/security/current-sessions"
             element={<AccountCurrentSessionsPage />}
           />
-
-          <Route
-            path="/meta/*"
-            element={
-              <ClientProvider>
-                <Routes>
-                  <Route path="dashboard" element={<DashboardMetaPage />} />
-                  <Route path="gastos" element={<AtualizacaoGastosPage />} />
-                  <Route path="clientes" element={<ClientesPage />} />
-                  <Route path="contas-anuncio" element={<ContasAnuncioPage />} />
-                  <Route path=":id/contas-anuncio" element={<AnaliseClientePage />} />
-                  <Route path=":id/depositos" element={<DepositosPage />} />
-                </Routes>
-              </ClientProvider>
-            }
-          />
-          <Route path="/meta/:id/insights" element={<ContasInsightPage />} />
-
           <Route path="/account/security/security-log" element={<AccountSecurityLogPage />} />
           <Route path="/account/members/team-starter" element={<AccountTeamsStarterPage />} />
           <Route path="/account/members/teams" element={<AccountTeamsPage />} />
@@ -194,6 +188,8 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/account/appearance" element={<AccountAppearancePage />} />
           <Route path="/account/invite-a-friend" element={<AccountInviteAFriendPage />} />
           <Route path="/account/activity" element={<AccountActivityPage />} />
+
+          {/* Network */}
           <Route path="/network/get-started" element={<NetworkGetStartedPage />} />
           <Route path="/network/user-cards/mini-cards" element={<NetworkMiniCardsPage />} />
           <Route path="/network/user-cards/team-crew" element={<NetworkUserCardsTeamCrewPage />} />
@@ -206,6 +202,24 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/network/user-table/saas-users" element={<NetworkSaasUsersPage />} />
           <Route path="/network/user-table/store-clients" element={<NetworkStoreClientsPage />} />
           <Route path="/network/user-table/visitors" element={<NetworkVisitorsPage />} />
+
+          {/* Meta */}
+          <Route
+            path="/meta/*"
+            element={
+              <ClientProvider>
+                <Routes>
+                  <Route path="gastos" index element={<AtualizacaoGastosPage />} />
+                  <Route path="clientes" element={<ClientesPage />} />
+                  <Route path=":id/contas-anuncio" element={<AnaliseClientePage />} />
+                  <Route path=":id/depositos" element={<DepositosPage />} />
+                </Routes>
+              </ClientProvider>
+            }
+          />
+          <Route path="/meta/:id/insights" element={<ContasInsightPage />} />
+
+          {/* Auth */}
           <Route path="/auth/welcome-message" element={<AuthenticationWelcomeMessagePage />} />
           <Route
             path="/auth/account-deactivated"
@@ -214,6 +228,7 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/authentication/get-started" element={<AuthenticationGetStartedPage />} />
         </Route>
       </Route>
+
       <Route path="error/*" element={<ErrorsRouting />} />
       <Route path="auth/*" element={<AuthPage />} />
       <Route path="*" element={<Navigate to="/error/404" />} />

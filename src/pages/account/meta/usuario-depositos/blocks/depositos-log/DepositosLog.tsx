@@ -25,7 +25,6 @@ interface IColumnFilterProps<TData, TValue> {
 
 const DepositosLog = () => {
   const { id } = useParams();
-  const { refetch } = useClient();
 
   const variables = useMemo(
     () => ({
@@ -38,7 +37,7 @@ const DepositosLog = () => {
     []
   );
 
-  const { data } = useQueryClienteTransacoes(variables);
+  const { data, refetch } = useQueryClienteTransacoes(variables);
 
   const ClienteTransacaoData = useMemo(() => {
     return (
@@ -222,6 +221,7 @@ const DepositosLog = () => {
             clienteId={Number(id)}
             usuarioId={1}
             open={show}
+            refetch={refetch}
             onClose={() => setShow(false)}
           />
           <DataGridColumnVisibility table={table} />

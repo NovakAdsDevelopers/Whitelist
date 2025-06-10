@@ -88,20 +88,20 @@ const Signup = () => {
         onSubmit={formik.handleSubmit}
       >
         <div className="text-center mb-2.5">
-          <h3 className="text-lg font-semibold text-gray-900 leading-none mb-2.5">Sign up</h3>
+          <h3 className="text-lg font-semibold text-gray-900 leading-none mb-2.5">Cadastrar-se</h3>
           <div className="flex items-center justify-center font-medium">
-            <span className="text-2sm text-gray-600 me-1.5">Already have an Account?</span>
+            <span className="text-2sm text-gray-600 me-1.5">Já possui uma conta?</span>
             <Link
               to={currentLayout?.name === 'auth-branded' ? '/auth/login' : '/auth/classic/login'}
               className="text-2sm link"
             >
-              Sign In
+              Faça login
             </Link>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5">
-          <a href="#" className="btn btn-light btn-sm justify-center">
+          <a href="#" className="btn btn-light btn-sm justify-center disabled">
             <img
               src={toAbsoluteUrl('/media/brand-logos/google.svg')}
               className="size-3.5 shrink-0"
@@ -109,7 +109,7 @@ const Signup = () => {
             Use Google
           </a>
 
-          <a href="#" className="btn btn-light btn-sm justify-center">
+          <a href="#" className="btn btn-light btn-sm justify-center disabled">
             <img
               src={toAbsoluteUrl('/media/brand-logos/apple-black.svg')}
               className="size-3.5 shrink-0 dark:hidden"
@@ -131,7 +131,7 @@ const Signup = () => {
         {formik.status && <Alert variant="danger">{formik.status}</Alert>}
 
         <div className="flex flex-col gap-1">
-          <label className="form-label text-gray-900">Name</label>
+          <label className="form-label text-gray-900">Nome</label>
           <label className="input">
             <input
               placeholder="Enter your name"
@@ -179,7 +179,7 @@ const Signup = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="form-label text-gray-900">Password</label>
+          <label className="form-label text-gray-900">Senha</label>
           <label className="input">
             <input
               type={showPassword ? 'text' : 'password'}
@@ -218,9 +218,9 @@ const Signup = () => {
             {...formik.getFieldProps('acceptTerms')}
           />
           <span className="checkbox-label">
-            I accept{' '}
+            Eu aceito{' '}
             <Link to="#" className="text-2sm link">
-              Terms & Conditions
+              Termos & Condições
             </Link>
           </span>
         </label>
@@ -236,7 +236,7 @@ const Signup = () => {
           className="btn btn-primary flex justify-center grow"
           disabled={loading || formik.isSubmitting || !formik.values.acceptTerms}
         >
-          {loading ? 'Please wait...' : 'Sign UP'}
+          {loading ? 'Por favor, aguarde...' : 'Cadastrar-se'}
         </button>
       </form>
     </div>

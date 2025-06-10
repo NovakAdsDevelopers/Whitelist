@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toAbsoluteUrl } from '@/utils';
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 import {
   useQueryClienteContasAnuncio,
@@ -24,7 +24,6 @@ interface IModalCreateClienteProps {
   onClose: () => void;
 }
 
-// ✅ InputCurrency agora lida com valores numéricos
 const InputCurrency = ({
   value,
   onChange
@@ -58,6 +57,8 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
   const [step, setStep] = useState(1);
   const [tipo, setTipo] = useState<TipoTransacao | null>(null);
   const [loading, setLoading] = useState(false);
+  const [saldoContaOrigem, setSaldoContaOrigem] = useState<number | null>(null);
+
   const { refetch, refetchAssociadas } = useClient();
   const { id } = useParams<{ id: string }>();
   const clienteId = Number(id);
@@ -86,6 +87,7 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
   const handleClose = () => {
     setStep(1);
     setTipo(null);
+    setSaldoContaOrigem(null);
     onClose();
   };
 
@@ -97,7 +99,6 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
     return 'Movimentação';
   };
 
-  // ✅ useFormik com valor numérico
   const formik = useFormik({
     initialValues: {
       contaOrigemId: 0,
@@ -115,13 +116,13 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
           contaOrigemId: values.contaOrigemId,
           contaDestinoId: tipo === 'REALOCACAO' ? values.contaDestinoId : null,
           tipo,
-          valor: Math.round(values.valor * 100), // ✅ conversão para centavos
+          valor: Math.round(values.valor * 100),
           usuarioId: currentUser!.id
         };
 
         console.log('Payload que será enviado:', payload);
 
-        await createTransacaoClienteContasAnuncio(payload); // ✅ envio ao backend
+        await createTransacaoClienteContasAnuncio(payload);
 
         toast.success('✅ Transação realizada com sucesso!');
         refetch();
@@ -129,17 +130,38 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
         setStatus(null);
         resetForm();
         handleClose();
-      } catch (error: any) {
-        console.error(error);
-        toast.message('❌ Erro ao realizar movimentação', {
-          description: error?.message || 'Ocorreu um erro inesperado.'
+      } catch (err: any) {
+        toast.message('❌ Erro ao processar a transação', {
+          description: err?.graphQLErrors?.[0]?.message || err?.message || 'Erro desconhecido.'
         });
-        setStatus('Erro ao realizar movimentação');
+
+        setStatus(err?.message);
       }
+
       setLoading(false);
       setSubmitting(false);
     }
   });
+
+  useEffect(() => {
+    if ((tipo === 'SAIDA' || tipo === 'REALOCACAO') && formik.values.contaOrigemId && data) {
+      const contaSelecionada = data.GetContasAssociadasPorCliente.result.find(
+        (c: any) => c.id === formik.values.contaOrigemId
+      );
+      setSaldoContaOrigem(contaSelecionada?.saldo ?? null);
+    } else {
+      setSaldoContaOrigem(null);
+    }
+  }, [formik.values.contaOrigemId, tipo, data]);
+
+  useEffect(() => {
+    if (open) {
+      formik.resetForm();
+      setStep(1);
+      setTipo(null);
+      setSaldoContaOrigem(null);
+    }
+  }, [open]);
 
   const renderStepContent = () => {
     if (step === 1) {
@@ -191,6 +213,16 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
                 </option>
               ))}
             </select>
+
+            {/* Exibe o saldo se aplicável */}
+            {saldoContaOrigem !== null && (
+              <p className="text-sm text-gray-600 mt-1">
+                Saldo disponível: {saldoContaOrigem.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                })}
+              </p>
+            )}
           </div>
 
           {tipo === 'REALOCACAO' && (
@@ -220,6 +252,8 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
               onChange={(newValue) => formik.setFieldValue('valor', newValue)}
             />
           </div>
+
+          {formik.status && <div className="text-sm text-red-500 mt-2">{formik.status}</div>}
 
           <hr className="mt-4" />
         </div>

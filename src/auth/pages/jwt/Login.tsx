@@ -23,8 +23,8 @@ const loginSchema = Yup.object().shape({
 });
 
 const initialValues = {
-  email: 'demo@keenthemes.com',
-  password: 'demo1234',
+  email: '',
+  password: '',
   remember: false
 };
 
@@ -78,20 +78,20 @@ const Login = () => {
         noValidate
       >
         <div className="text-center mb-2.5">
-          <h3 className="text-lg font-semibold text-gray-900 leading-none mb-2.5">Sign in</h3>
+          <h3 className="text-lg font-semibold text-gray-900 leading-none mb-2.5">Login</h3>
           <div className="flex items-center justify-center font-medium">
-            <span className="text-2sm text-gray-600 me-1.5">Need an account?</span>
+            <span className="text-2sm text-gray-600 me-1.5">Precisa de uma conta?</span>
             <Link
               to={currentLayout?.name === 'auth-branded' ? '/auth/signup' : '/auth/classic/signup'}
               className="text-2sm link"
             >
-              Sign up
+              Cadastrar-se
             </Link>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5">
-          <a href="#" className="btn btn-light btn-sm justify-center">
+          <a href="#" className="btn btn-light btn-sm justify-center disabled">
             <img
               src={toAbsoluteUrl('/media/brand-logos/google.svg')}
               className="size-3.5 shrink-0"
@@ -99,7 +99,7 @@ const Login = () => {
             Use Google
           </a>
 
-          <a href="#" className="btn btn-light btn-sm justify-center">
+          <a href="#" className="btn btn-light btn-sm justify-center disabled">
             <img
               src={toAbsoluteUrl('/media/brand-logos/apple-black.svg')}
               className="size-3.5 shrink-0 dark:hidden"
@@ -118,18 +118,13 @@ const Login = () => {
           <span className="border-t border-gray-200 w-full"></span>
         </div>
 
-        <Alert variant="primary">
-          Use <span className="font-semibold text-gray-900">demo@keenthemes.com</span> username and{' '}
-          <span className="font-semibold text-gray-900">demo1234</span> password.
-        </Alert>
-
         {formik.status && <Alert variant="danger">{formik.status}</Alert>}
 
         <div className="flex flex-col gap-1">
           <label className="form-label text-gray-900">Email</label>
           <label className="input">
             <input
-              placeholder="Enter username"
+              placeholder="demo@novak.com"
               autoComplete="off"
               {...formik.getFieldProps('email')}
               className={clsx('form-control', {
@@ -155,19 +150,20 @@ const Login = () => {
               }
               className="text-2sm link shrink-0"
             >
-              Forgot Password?
+              Esqueceu sua senha?
             </Link>
           </div>
           <label className="input">
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Enter Password"
+              placeholder="novak1234"
               autoComplete="off"
               {...formik.getFieldProps('password')}
               className={clsx('form-control', {
                 'is-invalid': formik.touched.password && formik.errors.password
               })}
             />
+
             <button className="btn btn-icon" onClick={togglePassword}>
               <KeenIcon icon="eye" className={clsx('text-gray-500', { hidden: showPassword })} />
               <KeenIcon
@@ -182,22 +178,12 @@ const Login = () => {
             </span>
           )}
         </div>
-
-        <label className="checkbox-group">
-          <input
-            className="checkbox checkbox-sm"
-            type="checkbox"
-            {...formik.getFieldProps('remember')}
-          />
-          <span className="checkbox-label">Remember me</span>
-        </label>
-
         <button
           type="submit"
           className="btn btn-primary flex justify-center grow"
           disabled={loading || formik.isSubmitting}
         >
-          {loading ? 'Please wait...' : 'Sign In'}
+          {loading ? 'Por favor, aguarde...' : 'Login'}
         </button>
       </form>
     </div>

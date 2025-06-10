@@ -45,9 +45,16 @@ interface IModalCreateClienteProps {
   onClose: () => void;
   clienteId: number;
   usuarioId: number;
+  refetch: any;
 }
 
-const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreateClienteProps) => {
+const ModalMoneyDeposit = ({
+  open,
+  onClose,
+  clienteId,
+  usuarioId,
+  refetch
+}: IModalCreateClienteProps) => {
   const [depositAmount, setDepositAmount] = useState<string>('R$ 0,00');
   const [tipo, setTipo] = useState<string | null>(null);
   // Pega a data atual
@@ -62,7 +69,7 @@ const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreate
   console.log(formattedDate); // Exemplo: "2025-04-15T21:20:40.271Z"
 
   const { createClienteTransacao, loading } = useSetClienteTransacao(usuarioId);
-  const { fee, refetch } = useClient();
+  const { fee } = useClient();
 
   const handleClose = () => onClose();
 
@@ -110,8 +117,16 @@ const ModalMoneyDeposit = ({ open, onClose, clienteId, usuarioId }: IModalCreate
     try {
       await createClienteTransacao(payload);
       toast.success('Transação criada com sucesso!');
-    } catch (err) {
-      toast.error('Erro ao criar transação');
+      refetch(); // atualiza os dados do cliente
+      handleClose(); // fecha o modal
+    } catch (err: any) {
+      if (err?.message?.toLowerCase().includes('network')) {
+        toast.error('Não foi possível conectar à API. Verifique sua conexão com a internet.');
+      } else if (err?.message) {
+        toast.error(`Erro: ${err.message}`);
+      } else {
+        toast.error('Erro inesperado ao criar transação.');
+      }
     }
   };
 

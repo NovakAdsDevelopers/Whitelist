@@ -26,8 +26,20 @@ const Layout = () => {
           <Outlet />
         </div>
 
-        <div className="lg:rounded-xl lg:border lg:border-gray-200 lg:m-5 order-1 lg:order-2 bg-top xxl:bg-center xl:bg-cover bg-no-repeat branded-bg">
-          <div className="flex flex-col p-8 lg:p-16 gap-4">
+        <div className="relative lg:rounded-xl lg:border lg:border-gray-200 lg:m-5 order-1 lg:order-2 bg-top xxl:bg-center xl:bg-cover bg-no-repeat branded-bg overflow-hidden">
+          {/* Vídeo como background */}
+          <div className="absolute inset-0 z-10">
+            <iframe
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/QlW0Umhodq8?autoplay=1&mute=1&loop=1&playlist=QlW0Umhodq8&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1"
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            ></iframe>
+          </div>
+
+          {/* Conteúdo sobreposto */}
+          <div className="flex flex-col p-8 lg:p-16 gap-4 backdrop-blur-sm bg-white/70 rounded-xl">
             <Link to="/">
               <img
                 src={toAbsoluteUrl('/media/app/mini-logo.svg')}

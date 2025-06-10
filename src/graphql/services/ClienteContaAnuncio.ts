@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { ApolloError, useMutation, useQuery } from '@apollo/client';
 import {
   GET_CLIENTE_CONTA_ANUNCIO,
   SET_CLIENTE_CONTA_ANUNCIO,
@@ -72,6 +72,7 @@ export function useSetClienteContasAnuncio(clientID: number) {
 }
 
 export function useSetTransacaoClienteContasAnuncio(clientID: number) {
+  let errorMessage = '';
   const [mutate, { data, loading, error }] = useMutation<
     TypesSetClienteContaAnuncio,
     { data: VariablesSetTrasacaoClienteContaAnuncio }
@@ -91,12 +92,15 @@ export function useSetTransacaoClienteContasAnuncio(clientID: number) {
       }
     ],
     awaitRefetchQueries: true,
+    errorPolicy: 'none',
     onCompleted: (data) => {
       console.log('✅ Cliente e contas associadas com sucesso!', data);
     }
   });
 
-  const createTransacaoClienteContasAnuncio = async (variables: VariablesSetTrasacaoClienteContaAnuncio) => {
+  const createTransacaoClienteContasAnuncio = async (
+    variables: VariablesSetTrasacaoClienteContaAnuncio
+  ) => {
     const response = await mutate({
       variables: { data: variables },
       refetchQueries: () => [

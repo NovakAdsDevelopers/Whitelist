@@ -1,14 +1,17 @@
 import { type TMenuConfig } from '@/components/menu';
 
 export const MENU_SIDEBAR: TMenuConfig = [
-
   {
     title: 'Meta',
     icon: 'shop',
     children: [
+      // {
+      //   title: 'Dashboard',
+      //   path: '/meta/dashboard'
+      // },
       {
-        title: 'Dashboard',
-        path: '/meta/dashboard'
+        title: 'Atualização de Gastos',
+        path: '/'
       },
       {
         title: 'Clientes',
@@ -17,10 +20,6 @@ export const MENU_SIDEBAR: TMenuConfig = [
       {
         title: 'Contas de Anúncio',
         path: '/meta/contas-anuncio'
-      },
-      {
-        title: 'Atualização de Gastos',
-        path: '/meta/gastos'
       }
     ]
   }

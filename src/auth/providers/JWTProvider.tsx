@@ -57,6 +57,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
     if (auth) {
       try {
         const { data: user } = await getUser();
+        console.log(user)
         setCurrentUser(user);
       } catch {
         saveAuth(undefined);
@@ -142,11 +143,14 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       try {
         // Decodifica o token para obter os dados do usuário diretamente
         const decodedToken = JSON.parse(atob(auth.api_token.split('.')[1]));
-
+        console.log('DECODETOKEN')
+        console.log(decodedToken)
         const user: UserModel = {
           id: decodedToken.id,
           email: decodedToken.email,
-          nome: decodedToken.nome
+          nome: decodedToken.nome,
+          tipo: decodedToken.tipo
+
         };
 
         return { data: user };

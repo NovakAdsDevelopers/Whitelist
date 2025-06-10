@@ -9,6 +9,7 @@ export interface UserModel {
   id: number;
   email: string;
   nome: string;
+  tipo: string;
   fullname?: string;
   occupation?: string;
   companyName?: string;

@@ -29,21 +29,21 @@ const SidebarMenuMeta = () => {
     {
       title: 'Meta',
       children: [
-        {
-          title: 'Dashboard',
-          path: '/meta/dashboard',
-          active: false
-        },
+        // {
+        //   title: 'Dashboard',
+        //   path: '/meta/dashboard',
+        //   active: false
+        // },
         {
           title: 'Clientes',
           path: '/meta/clientes',
           active: false
         },
-        {
-          title: 'Contas de Anuncio',
-          path: '/meta/contas-anuncio',
-          active: false
-        },
+        // {
+        //   title: 'Contas de Anuncio',
+        //   path: '/meta/contas-anuncio',
+        //   active: false
+        // },
         {
           title: 'Atualização de Gastos',
           path: '/meta/gastos',

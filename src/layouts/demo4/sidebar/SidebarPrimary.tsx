@@ -19,7 +19,13 @@ interface IMenuItem {
 }
 
 const menuItems: IMenuItem[] = [
-  { icon: 'element-1', tooltip: 'Dashboard', path: '/', rootPath: '/' },
+  {
+    icon: 'shop',
+    tooltip: 'Meta WhiteList',
+    path: '/',
+    rootPath: '/meta'
+  }
+  // { icon: 'element-1', tooltip: 'Dashboard', path: '/', rootPath: '/' },
   // {
   //   icon: 'profile-circle',
   //   tooltip: 'Profile',
@@ -46,12 +52,6 @@ const menuItems: IMenuItem[] = [
   //   path: '/account/security/security-log',
   //   rootPath: '/account/'
   // },
-  {
-    icon: 'shop',
-    tooltip: 'Meta WhiteList',
-    path: '/meta/dashboard',
-    rootPath: '/meta'
-  }
   // { icon: 'cheque', tooltip: 'Notifications', path: '/account/notifications', rootPath: '' },
   // { icon: 'code', tooltip: 'ACL', path: '/account/members/roles', rootPath: '' },
   // { icon: 'question', tooltip: 'API Keys', path: '/account/api-keys', rootPath: '' }
@@ -97,7 +97,8 @@ const SidebarPrimary = () => {
       <div ref={headerRef} className="hidden lg:flex items-center justify-center shrink-0">
         <Link to="/">
           <img
-            src={toAbsoluteUrl('/media/app/neologo-gray.svg')}
+            width={40}
+            src={toAbsoluteUrl('/media/app/logo-novak.jpg')}
             className="dark:hidden min-h-[30px]"
           />
           <img
@@ -133,8 +134,7 @@ const SidebarPrimary = () => {
         <div className="flex flex-col gap-1.5">
           <Menu>
             <MenuItem trigger="click">
-              <MenuToggle 
-              className="btn btn-icon btn-icon-xl relative rounded-md size-9 border border-transparent hover:bg-light hover:text-primary hover:border-gray-200 dropdown-open:bg-gray-200 text-gray-600">
+              <MenuToggle className="btn btn-icon btn-icon-xl relative rounded-md size-9 border border-transparent hover:bg-light hover:text-primary hover:border-gray-200 dropdown-open:bg-gray-200 text-gray-600">
                 <KeenIcon icon="book-square" />
               </MenuToggle>
             </MenuItem>

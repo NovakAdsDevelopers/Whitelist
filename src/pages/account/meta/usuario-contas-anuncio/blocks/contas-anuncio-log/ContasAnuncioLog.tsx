@@ -281,7 +281,7 @@ const ContasAnuncioLog = () => {
             empty: (
               <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
                 <Database className="text-muted-foreground pb-2" />
-                Nenhum cliente encontrado
+                Nenhuma conta associada ao cliente
               </div>
             )
           }}

@@ -22,11 +22,11 @@ const Sidebar = () => {
   const scrollableOffset = 70;
   const scrollableHeight = viewportHeight - scrollableOffset;
   const items = [
-    {
-      icon: 'chart-line-star',
-      path: '/',
-      tooltip: 'Dashboard'
-    },
+    // {
+    //   icon: 'chart-line-star',
+    //   path: '/',
+    //   tooltip: 'Dashboard'
+    // },
     {
       icon: 'profile-circle',
       path: '/public-profile/profiles/default',
