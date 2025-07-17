@@ -15,26 +15,10 @@ const Footer = () => {
               target="_blank"
               className="text-gray-600 hover:text-primary"
             >
-              Keenthemes Inc.
+              Novak Inc.
             </a>
           </div>
-          <nav className="flex order-1 md:order-2 gap-4 font-normal text-2sm text-gray-600">
-            <a href={generalSettings.docsLink} target="_blank" className="hover:text-primary">
-              Docs
-            </a>
-            <a href={generalSettings.purchaseLink} target="_blank" className="hover:text-primary">
-              Purchase
-            </a>
-            <a href={generalSettings.faqLink} target="_blank" className="hover:text-primary">
-              FAQ
-            </a>
-            <a href="https://keenthemes.com" target="_blank" className="hover:text-primary">
-              Support
-            </a>
-            <a href={generalSettings.licenseLink} target="_blank" className="hover:text-primary">
-              License
-            </a>
-          </nav>
+          
         </div>
       </Container>
     </footer>

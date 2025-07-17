@@ -6,7 +6,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { toAbsoluteUrl } from '@/utils';
+import { ConfirmDialog } from '@/components/ui/alert-dialog-confirm';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 import {
@@ -26,6 +26,7 @@ interface IModalCreateClienteProps {
   onClose: () => void;
 }
 
+/* -------- Input de moeda (centavos no estado) ---------- */
 const InputCurrency = ({
   value,
   onChange
@@ -54,13 +55,16 @@ const InputCurrency = ({
     />
   );
 };
+/* ------------------------------------------------------- */
 
 const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
+  /* ---------------------- state ---------------------- */
   const [step, setStep] = useState(1);
   const [tipo, setTipo] = useState<TipoTransacao | null>(null);
   const [loading, setLoading] = useState(false);
   const [saldoContaOrigem, setSaldoContaOrigem] = useState<number | null>(null);
 
+  /* ---------------------- dados ---------------------- */
   const { refetch, refetchAssociadas } = useClient();
   const { id } = useParams<{ id: string }>();
   const clienteId = Number(id);
@@ -82,6 +86,7 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
   const authContext = useContext(AuthContext);
   const currentUser = authContext?.currentUser;
 
+  /* ------------------- helpers ----------------------- */
   const handleTipoSelect = (value: TipoTransacao) => {
     setTipo(value);
     setStep(2);
@@ -102,6 +107,7 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
     return 'Movimentação';
   };
 
+  /* ------------------- formik ------------------------ */
   const formik = useFormik({
     initialValues: {
       contaOrigemId: 0,
@@ -123,8 +129,6 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
           usuarioId: currentUser!.id
         };
 
-        console.log('Payload que será enviado:', payload);
-
         await createTransacaoClienteContasAnuncio(payload);
 
         toast.success('✅ Transação realizada com sucesso!');
@@ -137,7 +141,6 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
         toast.message('❌ Erro ao processar a transação', {
           description: err?.graphQLErrors?.[0]?.message || err?.message || 'Erro desconhecido.'
         });
-
         setStatus(err?.message);
       }
 
@@ -146,6 +149,7 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
     }
   });
 
+  /* ------------ side-effects auxiliares -------------- */
   useEffect(() => {
     if ((tipo === 'SAIDA' || tipo === 'REALOCACAO') && formik.values.contaOrigemId && data) {
       const contaSelecionada = data.GetContasAssociadasPorCliente.result.find(
@@ -166,11 +170,42 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
     }
   }, [open]);
 
+  /* ------------ validações de negócio --------------- */
   const isValorMaiorQueSaldoCliente =
     tipo === 'ENTRADA' &&
     formik.values.valor > Number(dataCliente?.GetCliente.saldoCliente || 0) / 100;
 
+  const canConfirm =
+    !loading &&
+    formik.values.contaOrigemId &&
+    formik.values.valor > 0 &&
+    !((tipo !== 'ENTRADA' && Number(saldoContaOrigem) < 0) || isValorMaiorQueSaldoCliente);
+
+  const formatCurrency = (v: number) =>
+    v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const descricaoConfirmacao = (
+    <p>
+      Você realmente deseja&nbsp;
+      <strong
+        className={
+          tipo === 'ENTRADA'
+            ? 'text-primary'
+            : tipo === 'REALOCACAO'
+              ? 'text-yellow-600'
+              : 'text-red-600'
+        }
+      >
+        {tipo === 'ENTRADA' ? 'DEPOSITAR' : tipo === 'REALOCACAO' ? 'REALOCAR' : 'SACAR'}
+      </strong>
+      &nbsp;
+      {formatCurrency(formik.values.valor)}?
+    </p>
+  );
+
+  /* ------------------- JSX step ---------------------- */
   const renderStepContent = () => {
+    /* etapa 1 – escolher tipo */
     if (step === 1) {
       return (
         <div className="flex flex-col items-center gap-4">
@@ -199,14 +234,16 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
       );
     }
 
+    /* etapa 2 – formulário */
     return (
       <form onSubmit={formik.handleSubmit} className="w-full">
         <div className="w-full flex flex-col">
+          {/* saldo do cliente para entrada */}
           {tipo === 'ENTRADA' && (
             <div className="flex justify-end items-center gap-1">
               <KeenIcon icon="dollar" className="text-primary text-lg" />
-              <span>
-                Saldo disponivel:{' '}
+              <span className="text-sm">
+                Saldo disponível:&nbsp;
                 {(Number(dataCliente?.GetCliente.saldoCliente || 0) / 100).toLocaleString('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'
@@ -214,8 +251,10 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
               </span>
             </div>
           )}
+
+          {/* conta origem */}
           <div className="w-full flex flex-col gap-2 mb-4">
-            <label htmlFor="contaOrigemId">
+            <label htmlFor="contaOrigemId" className="text-sm">
               {tipo === 'REALOCACAO' ? 'Conta de origem:' : 'Conta:'}
             </label>
             <select
@@ -233,14 +272,14 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
               ))}
             </select>
 
-            {/* Exibe o saldo se aplicável */}
+            {/* saldo da conta origem, se aplicável */}
             {saldoContaOrigem !== null && (
               <p
                 className={`text-sm mt-1 ${
                   Number(saldoContaOrigem) < 0 ? 'text-red-600' : 'text-gray-600'
                 }`}
               >
-                Saldo disponível:{' '}
+                Saldo disponível:&nbsp;
                 {(Number(saldoContaOrigem || 0) / 100).toLocaleString('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'
@@ -249,9 +288,12 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
             )}
           </div>
 
+          {/* conta destino em caso de realocação */}
           {tipo === 'REALOCACAO' && (
             <div className="w-full flex flex-col gap-2 mb-4">
-              <label htmlFor="contaDestinoId">Conta de destino:</label>
+              <label htmlFor="contaDestinoId" className="text-sm">
+                Conta de destino:
+              </label>
               <select
                 id="contaDestinoId"
                 name="contaDestinoId"
@@ -275,14 +317,18 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
             </div>
           )}
 
+          {/* valor */}
           <div className="w-full flex flex-col gap-2">
-            <label htmlFor="valor">Valor:</label>
+            <label htmlFor="valor" className="text-sm">
+              Valor:
+            </label>
             <InputCurrency
               value={formik.values.valor}
               onChange={(newValue) => formik.setFieldValue('valor', newValue)}
             />
           </div>
 
+          {/* mensagens de erro */}
           {formik.status && <div className="text-sm text-red-500 mt-2">{formik.status}</div>}
           {isValorMaiorQueSaldoCliente && (
             <p className="text-xs mt-2 text-red-600">
@@ -292,22 +338,28 @@ const ModalMoneyTransfer = ({ open, onClose }: IModalCreateClienteProps) => {
 
           <hr className="mt-4" />
         </div>
+
+        {/* botão de confirmação com ConfirmDialog */}
         <div className="flex justify-end mt-4">
-          <Button
-            type="submit"
-            disabled={
-              loading ||
-              (tipo !== 'ENTRADA' && Number(saldoContaOrigem) < 0) ||
-              isValorMaiorQueSaldoCliente
-            }
+          <ConfirmDialog
+            title="Confirmar operação?"
+            description={descricaoConfirmacao}
+            action={() => formik.submitForm()}
+            textAction="Sim, confirmar"
+            textCancel="Voltar"
+            disabled={!canConfirm}
+            delayMs={3000}
           >
-            {loading ? 'Processando...' : 'Confirmar'}
-          </Button>
+            <Button type="button" disabled={!canConfirm} className="disabled:opacity-60">
+              {loading ? 'Processando...' : 'Confirmar'}
+            </Button>
+          </ConfirmDialog>
         </div>
       </form>
     );
   };
 
+  /* -------------------- render ----------------------- */
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent>

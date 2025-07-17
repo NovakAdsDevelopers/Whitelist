@@ -86,11 +86,16 @@ import {
 
 import { Demo4Layout } from '@/layouts/demo4';
 import { ClientesPage } from '@/pages/account/meta/clientes';
-import { ContasAnuncioPage } from '@/pages/account/meta/contas-anuncio';
 import { AnaliseClientePage } from '@/pages/account/meta/usuario-contas-anuncio';
 import { ContasInsightPage } from '@/pages/account/meta/insights';
 import { DepositosPage } from '@/pages/account/meta/usuario-depositos';
 import { ClientProvider } from '@/auth/providers/ClientProvider';
+import { PainelRelatorioPage } from '@/pages/account/painel/relatorio';
+import { PainelSolicitacoesPage } from '@/pages/account/painel/solicitacoes';
+import { PainelEstoqueContasPage } from '@/pages/account/painel/estoqueContas';
+import { PainelGestaoContasPage } from '@/pages/account/painel/gestaoContas';
+import { PainelResumoContasPage } from '@/pages/account/painel/resumoContas';
+import { PainelContasAnuncioPage } from '@/pages/account/painel/contas-anuncio';
 
 const AppRoutingSetup = (): ReactElement => {
   return (
@@ -103,6 +108,26 @@ const AppRoutingSetup = (): ReactElement => {
             element={
               <ClientProvider>
                 <AtualizacaoGastosPage /> {/* ou outra página inicial que você quiser renderizar */}
+              </ClientProvider>
+            }
+          />
+
+          {/* Página inicial com ClientProvider */}
+          <Route
+            path="/dashboard"
+            element={
+              <ClientProvider>
+                <DashboardMetaPage /> {/* ou outra página inicial que você quiser renderizar */}
+              </ClientProvider>
+            }
+          />
+
+          {/* Página inicial com ClientProvider */}
+          <Route
+            path="/painel"
+            element={
+              <ClientProvider>
+                <PainelRelatorioPage /> {/* ou outra página inicial que você quiser renderizar */}
               </ClientProvider>
             }
           />
@@ -218,6 +243,23 @@ const AppRoutingSetup = (): ReactElement => {
             }
           />
           <Route path="/meta/:id/insights" element={<ContasInsightPage />} />
+
+          <Route
+            path="/painel/*"
+            element={
+              <ClientProvider>
+                <Routes>
+                  <Route path="relatorios" index element={<PainelRelatorioPage />} />
+                  <Route path="solicitacoes" index element={<PainelSolicitacoesPage />} />
+                  <Route path="estoque-contas" element={<PainelEstoqueContasPage />} />
+                  <Route path="gestao-contas" element={<PainelGestaoContasPage />} />
+                  <Route path="resumo-contas" element={<PainelResumoContasPage />} />
+
+                  <Route path="gestao-contas/:id" element={<PainelContasAnuncioPage />} />
+                </Routes>
+              </ClientProvider>
+            }
+          />
 
           {/* Auth */}
           <Route path="/auth/welcome-message" element={<AuthenticationWelcomeMessagePage />} />

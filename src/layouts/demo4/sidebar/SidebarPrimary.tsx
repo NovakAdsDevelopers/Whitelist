@@ -7,9 +7,6 @@ import { DropdownUser } from '@/partials/dropdowns/user';
 import { DropdownChat } from '@/partials/dropdowns/chat';
 import { DropdownApps } from '@/partials/dropdowns/apps';
 import { useLanguage } from '@/i18n';
-import { ModalProfile } from '@/partials/modals/profile';
-import { ModalAccountDeactivated } from '@/partials/modals/account-deactivated';
-import { ModalWelcomMessage } from '@/partials/modals/welcome-message';
 
 interface IMenuItem {
   icon: string;
@@ -19,42 +16,14 @@ interface IMenuItem {
 }
 
 const menuItems: IMenuItem[] = [
+  { icon: 'element-1', tooltip: 'Dashboard', path: '/dashboard', rootPath: '/dashboard' },
+  { icon: 'element-3', tooltip: 'Paineis', path: '/painel', rootPath: '/painel' },
   {
     icon: 'shop',
     tooltip: 'Meta WhiteList',
     path: '/',
     rootPath: '/meta'
   }
-  // { icon: 'element-1', tooltip: 'Dashboard', path: '/', rootPath: '/' },
-  // {
-  //   icon: 'profile-circle',
-  //   tooltip: 'Profile',
-  //   path: '/public-profile/profiles/default',
-  //   rootPath: '/public-profile/'
-  // },
-  // {
-  //   icon: 'setting-2',
-  //   tooltip: 'Account',
-  //   path: '/account/home/get-started',
-  //   rootPath: '/account/'
-  // },
-  // { icon: 'users', tooltip: 'Network', path: '/network/get-started', rootPath: 'network/' },
-  // {
-  //   icon: 'security-user',
-  //   tooltip: 'Authentication',
-  //   path: '/authentication/get-started',
-  //   rootPath: '/authentication/'
-  // },
-  // { icon: 'code', tooltip: 'Plans', path: '/account/billing/plans', rootPath: '' },
-  // {
-  //   icon: 'shop',
-  //   tooltip: 'Security Logs',
-  //   path: '/account/security/security-log',
-  //   rootPath: '/account/'
-  // },
-  // { icon: 'cheque', tooltip: 'Notifications', path: '/account/notifications', rootPath: '' },
-  // { icon: 'code', tooltip: 'ACL', path: '/account/members/roles', rootPath: '' },
-  // { icon: 'question', tooltip: 'API Keys', path: '/account/api-keys', rootPath: '' }
 ];
 
 const SidebarPrimary = () => {

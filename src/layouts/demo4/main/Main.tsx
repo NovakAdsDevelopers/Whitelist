@@ -71,10 +71,6 @@ const Main = () => {
                         {DropdownNotifications({ menuTtemRef: itemNotificationsRef })}
                       </MenuItem>
                     </Menu>
-                    <Link to={'/account/home/get-started'} className="btn btn-xs btn-light">
-                      <KeenIcon icon="exit-down" />
-                      Export
-                    </Link>
                   </ToolbarActions>
                 </Toolbar>
 

@@ -59,3 +59,15 @@ export type VariablesSetCliente = {
     fee: string;
   };
 };
+
+export type VariablesDeleteCliente = {
+  data: {
+    deleteClienteId: number;
+  };
+};
+
+export type TypesDeleteCliente = {
+  DeleteCliente: {
+    id: number;
+  };
+};

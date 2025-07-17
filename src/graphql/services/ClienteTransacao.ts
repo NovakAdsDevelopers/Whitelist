@@ -3,7 +3,6 @@ import { GET_CLIENTE_TRANSACOES, SET_CLIENTE_TRANSACAO } from '../schemas/Client
 import { useMutation, useQuery } from '@apollo/client';
 import { TypesSetClienteContaAnuncio } from '../types/ClienteContaAnuncio';
 import { VariablesSetClienteTransacao } from '../types/Cliente';
-import { SET_CLIENTE_CONTA_ANUNCIO } from '../schemas/ClienteContaAnuncio';
 
 /**
  * Hook para buscar clientes com variáveis dinâmicas

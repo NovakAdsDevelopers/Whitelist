@@ -22,6 +22,28 @@ export const MENU_SIDEBAR: TMenuConfig = [
         path: '/meta/contas-anuncio'
       }
     ]
+  },
+  {
+    title: 'Dashboard',
+    icon: 'element-1',
+    children: [
+      {
+        title: 'Dashboard',
+        path: '/meta/dashboard'
+      },
+      {
+        title: 'Atualização de Gastos',
+        path: '/'
+      },
+      {
+        title: 'Clientes1',
+        path: '/meta/clientes'
+      },
+      {
+        title: 'Contas de Anúncio',
+        path: '/meta/contas-anuncio'
+      }
+    ]
   }
 ];
 

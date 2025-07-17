@@ -24,7 +24,7 @@ const DropdownNotifications = ({ menuTtemRef }: IDropdownNotificationProps) => {
   const buildHeader = () => {
     return (
       <div className="flex items-center justify-between gap-2.5 text-sm text-gray-900 font-semibold px-5 py-2.5 border-b border-b-gray-200">
-        Notifications
+        Notificações
         <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0" onClick={handleClose}>
           <KeenIcon icon="cross" />
         </button>
@@ -37,48 +37,18 @@ const DropdownNotifications = ({ menuTtemRef }: IDropdownNotificationProps) => {
       <Tabs defaultValue={1} className="">
         <TabsList className="justify-between px-5 mb-2">
           <div className="flex items-center gap-5">
-            <Tab value={1}>All</Tab>
+            <Tab value={1}>Todas</Tab>
             <Tab value={2} className="relative">
-              Inbox
+              Caixa de entrada
               <span className="badge badge-dot badge-success size-[5px] absolute top-2 rtl:start-0 end-0 transform translate-y-1/2 translate-x-full"></span>
             </Tab>
-            <Tab value={3}>Team</Tab>
-            <Tab value={4}>Following</Tab>
           </div>
-          <Menu>
-            <MenuItem
-              toggle="dropdown"
-              trigger="click"
-              dropdownProps={{
-                placement: isRTL() ? 'bottom-start' : 'bottom-end',
-                modifiers: [
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: isRTL() ? [0, -10] : [0, 10] // [skid, distance]
-                    }
-                  }
-                ]
-              }}
-            >
-              <MenuToggle className="btn btn-sm btn-icon btn-light btn-clear">
-                <KeenIcon icon="setting-2" />
-              </MenuToggle>
-              {DropdownCrud2()}
-            </MenuItem>
-          </Menu>
         </TabsList>
         <TabPanel value={1}>
           <DropdownNotificationsAll />
         </TabPanel>
         <TabPanel value={2}>
           <DropdownNotificationsInbox />
-        </TabPanel>
-        <TabPanel value={3}>
-          <DropdownNotificationsTeam />
-        </TabPanel>
-        <TabPanel value={4}>
-          <DropdownNotificationsFollowing />
         </TabPanel>
       </Tabs>
     );

@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import { SidebarMenuDefault } from '.';
 import { SidebarMenuMeta } from './SidebarMenuMeta';
-// import { SidebarMenuDashboard } from './SidebarMenuDashboard'; // Comentado pois não será mais usado
+import { SidebarMenuDashboard } from './SidebarMenuDashboard'; // Comentado pois não será mais usado
+import { SidebarMenuPainel } from './SidebarMenuPainel';
 
 const SidebarSecondary = () => {
   const { pathname } = useLocation();
@@ -24,8 +25,14 @@ const SidebarSecondary = () => {
           ...(scrollableHeight > 0 && { height: `${scrollableHeight}px` })
         }}
       >
-        {pathname === '/' || pathname.startsWith('/meta/') ? (
+        {pathname === '/' ? (
           <SidebarMenuMeta />
+        ) : pathname.startsWith('/meta/') ? (
+          <SidebarMenuMeta />
+        ) : pathname === '/dashboard' ? (
+          <SidebarMenuDashboard />
+        ) : pathname === '/painel' || pathname.startsWith('/painel/') ? (
+          <SidebarMenuPainel />
         ) : (
           <SidebarMenuDefault />
         )}

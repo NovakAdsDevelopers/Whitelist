@@ -15,9 +15,11 @@ import { IClienteLogData } from './ClientesLogData';
 import { Button } from '@/components/ui/button';
 import { ModalCreateCliente } from '@/partials/modals/clientes/create';
 import { Link } from 'react-router-dom';
-import { useQueryClientes } from '@/graphql/services/Cliente';
+import { useDeleteCliente, useQueryClientes } from '@/graphql/services/Cliente';
 import { useClient } from '@/auth/providers/ClientProvider';
 import { Loader2, Database } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/alert-dialog-confirm';
+import { useAuthContext } from '@/auth';
 
 // ✅ Componente separado para evitar hook em render dinâmica
 const ClienteLinkCell: React.FC<{ id: number }> = ({ id }) => {
@@ -31,15 +33,50 @@ const ClienteLinkCell: React.FC<{ id: number }> = ({ id }) => {
     <Link
       to={`/meta/${id}/contas-anuncio`}
       onClick={handleClick}
-      title="Contas de Anúncio"
-      className="btn btn-icon btn-light btn-clear btn-sm"
+      title="Contas de Anúncios"
+      className="btn btn-icon btn-sm bg-gray-200 hover:bg-green-300 hover:text-green-700 transition-colors"
     >
       <KeenIcon icon="data" />
     </Link>
   );
 };
 
+const ClienteDeleteCell: React.FC<{ id: number }> = ({ id }) => {
+  const { deleteCliente } = useDeleteCliente();
+
+  // mutation/service real
+  const excluirCliente = async () => {
+    try {
+      await deleteCliente(id);
+      toast.success('Cliente removido com sucesso!');
+    } catch {
+      toast.error('Erro ao remover cliente.');
+    }
+  };
+
+  return (
+    <ConfirmDialog
+      title="Confirmar operação?"
+      description="Você realmente deseja EXCLUIR este cliente?"
+      action={excluirCliente}
+      textAction="Sim, excluir"
+      textCancel="Cancelar"
+      delayMs={3000}
+    >
+      {/* Trigger do ConfirmDialog */}
+      <button
+        title="Excluir"
+        className="btn btn-icon btn-sm bg-gray-200 hover:bg-red-300 hover:text-red-700 transition-colors"
+      >
+        <KeenIcon icon="trash" />
+      </button>
+    </ConfirmDialog>
+  );
+};
+
 const ClientesLog = () => {
+  const { currentUser } = useAuthContext();
+
   const variables = useMemo(
     () => ({
       pagination: {
@@ -109,11 +146,16 @@ const ClientesLog = () => {
         meta: { headerClassName: 'min-w-[200px]' }
       },
       {
-        id: 'click',
-        header: () => '',
+        id: 'actions',
+        header: () => <div className="flex justify-center w-full">Ações</div>,
         enableSorting: false,
-        cell: ({ row }) => <ClienteLinkCell id={row.original.id} />,
-        meta: { headerClassName: 'w-[60px]' }
+        cell: ({ row }) => (
+          <div className="flex justify-center gap-2">
+            <ClienteLinkCell id={row.original.id} />
+            {currentUser?.tipo === 'ADMIN' ? <ClienteDeleteCell id={row.original.id} /> : null}
+          </div>
+        ),
+        meta: { headerClassName: 'w-[120px]' }
       }
     ],
     []

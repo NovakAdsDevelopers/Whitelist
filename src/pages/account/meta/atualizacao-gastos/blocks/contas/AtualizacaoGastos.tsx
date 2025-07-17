@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Column, ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import {
   DataGrid,
@@ -19,6 +19,8 @@ import { metaApi } from '@/services/connection';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { ModalAjusteLimite } from '@/partials/modals/ajutes-limite/create';
+import { useTempoRestante } from '@/lib/utils';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;
@@ -26,30 +28,25 @@ interface IColumnFilterProps<TData, TValue> {
 
 const ContasTable = () => {
   const { data, refetch } = useGetContasAnuncio({
-    pagination: {
-      pagina: 0,
-      quantidade: 1000000
-    }
+    pagination: { pagina: 0, quantidade: 1000000 }
   });
 
   const [isSyncingAll, setIsSyncingAll] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  console.log(isSyncing);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+
   async function syncAllAccounts() {
     setIsSyncingAll(true);
     try {
-      const metaResponse = await metaApi.get('/sync-ads');
-      const metaData = metaResponse.data;
-
-      console.log(metaData);
-
-      if (metaResponse.status === 200) {
-        toast.success(metaData.message || 'Sincronização com o Meta concluída com sucesso!');
-        await refetch(); // 🔁 Refetch aqui
+      const res = await metaApi.get('/sync-ads');
+      if (res.status === 200) {
+        toast.success(res.data.message || 'Sincronização com o Meta concluída!');
+        await refetch();
       } else {
-        toast.error(metaData.error || 'Erro durante a sincronização com o Meta.');
+        toast.error(res.data.error || 'Erro durante a sincronização com o Meta.');
       }
-    } catch (error) {
+    } catch {
       toast.error('Erro inesperado ao tentar sincronizar com o Meta.');
     } finally {
       setIsSyncingAll(false);
@@ -59,25 +56,19 @@ const ContasTable = () => {
   async function syncAccount(conta_anuncio_id: string) {
     setIsSyncing(true);
     try {
-      const metaResponse = await metaApi.get(`/sync-ads/${conta_anuncio_id}`);
-      const metaData = metaResponse.data;
-
-      console.log(metaData);
-
-      if (metaResponse.status === 200) {
-        toast.success(metaData.message || 'Sincronização com o Meta concluída com sucesso!');
-        await refetch(); // 🔁 Refetch aqui
+      const res = await metaApi.get(`/sync-ads/${conta_anuncio_id}`);
+      if (res.status === 200) {
+        toast.success(res.data.message || 'Sincronização com o Meta concluída!');
+        await refetch();
       } else {
-        toast.error(metaData.error || 'Erro durante a sincronização com o Meta.');
+        toast.error(res.data.error || 'Erro ao sincronizar com o Meta.');
       }
-    } catch (error) {
-      toast.error('Erro inesperado ao tentar sincronizar com o Meta.');
+    } catch {
+      toast.error('Erro inesperado.');
     } finally {
       setIsSyncing(false);
     }
   }
-
-  console.log(data?.GetContasAnuncio.result.length);
 
   const contasAnunciosData: IAtualizaçãoContasAnuncioLogData[] = useMemo(() => {
     return (
@@ -97,18 +88,15 @@ const ContasTable = () => {
       })) || []
     );
   }, [data]);
-  console.log(contasAnunciosData.length);
 
-  const ColumnInputFilter = <TData, TValue>({ column }: IColumnFilterProps<TData, TValue>) => {
-    return (
-      <Input
-        placeholder="Filtrar..."
-        value={(column.getFilterValue() as string) ?? ''}
-        onChange={(event) => column.setFilterValue(event.target.value)}
-        className="h-9 w-full max-w-40"
-      />
-    );
-  };
+  const ColumnInputFilter = <TData, TValue>({ column }: IColumnFilterProps<TData, TValue>) => (
+    <Input
+      placeholder="Filtrar..."
+      value={(column.getFilterValue() as string) ?? ''}
+      onChange={(e) => column.setFilterValue(e.target.value)}
+      className="h-9 w-full max-w-40"
+    />
+  );
 
   const columns = useMemo<ColumnDef<IAtualizaçãoContasAnuncioLogData>[]>(
     () => [
@@ -136,11 +124,7 @@ const ContasTable = () => {
       {
         accessorFn: (row) => {
           const deposito = Math.round(Number(row.depositoTotal)) || 0;
-
-          // NÃO multiplica por 100! Já está em centavos.
           const gasto = Math.round(Number(row.gastoAPI)) || 0;
-
-          // Subtração correta: centavos - centavos
           return deposito - gasto;
         },
         id: 'saldoDisponivel',
@@ -152,27 +136,32 @@ const ContasTable = () => {
             ? new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
-              }).format(value / 100) // Exibe em reais
+              }).format(value / 100)
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
-
       {
         accessorKey: 'saldoMeta',
-        accessorFn: (row) => Number(row.saldoMeta) || 0,
+        accessorFn: (row) => {
+          const valorReais = Number(row.saldoMeta) || 0;
+          // retorna em centavos (inteiro)
+          return Math.round(valorReais * 100);
+        },
         header: ({ column }) => <DataGridColumnHeader title="No Meta" column={column} />,
         cell: (info) => {
-          const value = info.getValue();
-          return typeof value === 'number'
-            ? new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(value)
-            : '-';
+          const valorCentavos = info.getValue<number>();
+          if (typeof valorCentavos !== 'number') return '-';
+
+          const valorReais = valorCentavos / 100; // volta para reais só para exibir
+          return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+          }).format(valorReais / 100);
         },
         meta: { headerClassName: 'min-w-[130px]' }
       },
+
       {
         id: 'a_inserir',
         header: ({ column }) => <DataGridColumnHeader title="A Inserir" column={column} />,
@@ -182,7 +171,6 @@ const ContasTable = () => {
           const gasto = Number(row.gastoTotal) || 0;
           const saldoDisponivel = deposito - gasto;
           const saldoMeta = Number(row.saldoMeta) || 0;
-
           const aInserir = Math.max(saldoDisponivel - saldoMeta, 0);
 
           return new Intl.NumberFormat('pt-BR', {
@@ -190,9 +178,7 @@ const ContasTable = () => {
             currency: 'BRL'
           }).format(aInserir / 100);
         },
-        meta: {
-          headerClassName: 'min-w-[120px]'
-        }
+        meta: { headerClassName: 'min-w-[120px]' }
       },
       {
         accessorKey: 'ultimaSincronizacao',
@@ -205,26 +191,12 @@ const ContasTable = () => {
           const now = new Date();
           const diffMs = now.getTime() - date.getTime();
           const diffMins = Math.floor(diffMs / 1000 / 60);
-
           let label = '';
-          if (diffMins < 1) {
-            label = 'há menos de 1m';
-          } else if (diffMins < 60) {
-            label = `há ${diffMins}m`;
-          } else if (diffMins < 480) {
-            const hours = Math.floor(diffMins / 60);
-            label = `há ${hours}h`;
-          } else {
-            label = 'há mais de 8h';
-          }
 
-          const fullDate = date.toLocaleString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+          if (diffMins < 1) label = 'há menos de 1m';
+          else if (diffMins < 60) label = `há ${diffMins}m`;
+          else if (diffMins < 480) label = `há ${Math.floor(diffMins / 60)}h`;
+          else label = 'há mais de 8h';
 
           return (
             <TooltipProvider>
@@ -243,7 +215,7 @@ const ContasTable = () => {
         id: 'actions',
         header: ({ column }) => <DataGridColumnHeader title="Actions" column={column} />,
         cell: ({ row }) => {
-          const conta_anuncio_id = row.original.id; // ou outro nome do campo
+          const conta_anuncio_id = row.original.id;
           return (
             <div className="flex items-center gap-2">
               <Button
@@ -259,8 +231,15 @@ const ContasTable = () => {
                 )}
               </Button>
 
-              <Button variant="green" size="sm">
-                <KeenIcon icon="dollar" />
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setSelectedAccountId(conta_anuncio_id);
+                  setOpenModal(true);
+                }}
+              >
+                <KeenIcon icon="setting-4" />
               </Button>
             </div>
           );
@@ -269,31 +248,34 @@ const ContasTable = () => {
         meta: { headerClassName: 'min-w-[160px]' }
       }
     ],
-    []
+    [isSyncing]
   );
 
   const handleRowSelection = (state: RowSelectionState) => {
-    const selectedRowIds = Object.keys(state);
-
-    if (selectedRowIds.length > 0) {
-      toast(`Total de ${selectedRowIds.length} selecionadas.`, {
-        description: `IDs selecionados: ${selectedRowIds.join(', ')}`,
-        action: {
-          label: 'Desfazer',
-          onClick: () => console.log('Undo')
-        }
+    const selectedIds = Object.keys(state);
+    if (selectedIds.length > 0) {
+      toast(`Total de ${selectedIds.length} selecionadas.`, {
+        description: `IDs selecionados: ${selectedIds.join(', ')}`,
+        action: { label: 'Desfazer', onClick: () => console.log('Undo') }
       });
     }
   };
 
   const Toolbar = () => {
+    const { minutos, segundos } = useTempoRestante();
     const { table } = useDataGrid();
 
     return (
       <div className="card-header flex-wrap px-5 py-4 border-b-0">
         <h3 className="card-title">Atualização de Gastos</h3>
+       
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button variant="default" size="sm" onClick={syncAllAccounts} disabled={isSyncingAll}>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={syncAllAccounts}
+            disabled={isSyncingAll || (minutos === 0 && segundos <= 10)}
+          >
             {isSyncingAll ? (
               <>
                 <KeenIcon icon="loader" className="animate-spin" />
@@ -313,16 +295,24 @@ const ContasTable = () => {
   };
 
   return (
-    <DataGrid
-      columns={columns}
-      data={contasAnunciosData}
-      rowSelection={true}
-      onRowSelectionChange={handleRowSelection}
-      pagination={{ size: 10 }}
-      sorting={[{ id: 'ultimaSincronizacao', desc: false }]}
-      toolbar={<Toolbar />}
-      layout={{ card: true }}
-    />
+    <>
+      <DataGrid
+        columns={columns}
+        data={contasAnunciosData}
+        rowSelection={true}
+        onRowSelectionChange={handleRowSelection}
+        pagination={{ size: 10 }}
+        sorting={[{ id: 'ultimaSincronizacao', desc: false }]}
+        toolbar={<Toolbar />}
+        layout={{ card: true }}
+      />
+
+      <ModalAjusteLimite
+        contaAnuncioID={selectedAccountId ?? ''}
+        open={openModal}
+        onOpenChange={() => setOpenModal(false)}
+      />
+    </>
   );
 };
 

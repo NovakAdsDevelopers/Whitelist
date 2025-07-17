@@ -48,3 +48,11 @@ export const SET_CLIENTE = gql`
     }
   }
 `;
+
+export const DELETE_CLIENTE = gql`
+  mutation DeleteCliente($deleteClienteId: Int!) {
+    DeleteCliente(id: $deleteClienteId) {
+      id
+    }
+  }
+`;
