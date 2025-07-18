@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
-import { useGetContasAnuncio } from '@/graphql/services/ContasAnuncio';
+import { useGetAllContasAnuncio } from '@/graphql/services/ContasAnuncio';
 
 const animatedComponents = makeAnimated();
-
 
 interface ChosenContasAnuncioProps {
   onChange: (value: { label: string; value: string }[]) => void;
@@ -15,19 +14,19 @@ const ChosenContasAnuncio = ({ onChange }: ChosenContasAnuncioProps) => {
     () => ({
       pagination: {
         pagina: 0,
-        quantidade: 100000,
-      },
+        quantidade: 100000
+      }
     }),
     []
   );
 
-  const { data } = useGetContasAnuncio(variables);
+  const { data } = useGetAllContasAnuncio(variables);
 
   const options = useMemo(() => {
     return (
-      data?.GetContasAnuncio.result.map((conta) => ({
+      data?.GetAllContasAnuncio.result.map((conta) => ({
         label: `${conta.id} - ${conta.nome}`,
-        value: conta.id,
+        value: conta.id
       })) || []
     );
   }, [data]);

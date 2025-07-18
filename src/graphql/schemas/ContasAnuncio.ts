@@ -27,3 +27,31 @@ export const GET_CONTA_ANUNCIO = gql`
     }
   }
 `;
+
+export const GET_ALL_CONTA_ANUNCIO = gql`
+  query GetAllContasAnuncio($pagination: Pagination) {
+    GetAllContasAnuncio(pagination: $pagination) {
+      pageInfo {
+        currentPage
+        totalPages
+        totalItems
+        hasNextPage
+        hasPreviousPage
+      }
+      result {
+        id
+        nome
+        status
+        moeda
+        fusoHorario
+        gastoTotal
+        gastoAPI
+        ultimaSincronizacao
+        limiteGasto
+        saldoMeta
+        saldo
+        depositoTotal
+      }
+    }
+  }
+`;
