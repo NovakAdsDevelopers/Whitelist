@@ -5,9 +5,13 @@ import { SidebarMenuDefault } from '.';
 import { SidebarMenuMeta } from './SidebarMenuMeta';
 import { SidebarMenuDashboard } from './SidebarMenuDashboard'; // Comentado pois não será mais usado
 import { SidebarMenuPainel } from './SidebarMenuPainel';
+import { SidebarMenuBackoffice } from './SidebarMenuBackoffice';
+import { useAuthContext } from '@/auth';
 
 const SidebarSecondary = () => {
   const { pathname } = useLocation();
+  const { currentUser } = useAuthContext();
+
   const [viewportHeight] = useViewport();
   const offset = 0;
   const [scrollableHeight, setScrollableHeight] = useState<number>(0);
@@ -33,6 +37,10 @@ const SidebarSecondary = () => {
           <SidebarMenuDashboard />
         ) : pathname === '/painel' || pathname.startsWith('/painel/') ? (
           <SidebarMenuPainel />
+        ) : pathname === '/backoffice' ||
+          pathname.startsWith('/backoffice/') ||
+          currentUser?.tipo === 'ADMIN' ? (
+          <SidebarMenuBackoffice />
         ) : (
           <SidebarMenuDefault />
         )}

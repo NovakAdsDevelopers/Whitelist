@@ -96,6 +96,7 @@ import { PainelEstoqueContasPage } from '@/pages/account/painel/estoqueContas';
 import { PainelGestaoContasPage } from '@/pages/account/painel/gestaoContas';
 import { PainelResumoContasPage } from '@/pages/account/painel/resumoContas';
 import { PainelContasAnuncioPage } from '@/pages/account/painel/contas-anuncio';
+import { BackofficePage } from '@/pages/account/meta/backoffice';
 
 const AppRoutingSetup = (): ReactElement => {
   return (
@@ -256,6 +257,17 @@ const AppRoutingSetup = (): ReactElement => {
                   <Route path="resumo-contas" element={<PainelResumoContasPage />} />
 
                   <Route path="gestao-contas/:id" element={<PainelContasAnuncioPage />} />
+                </Routes>
+              </ClientProvider>
+            }
+          />
+
+          <Route
+            path="/backoffice/*"
+            element={
+              <ClientProvider>
+                <Routes>
+                  <Route index element={<BackofficePage />} />
                 </Routes>
               </ClientProvider>
             }

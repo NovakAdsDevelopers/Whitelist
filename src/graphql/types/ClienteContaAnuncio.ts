@@ -36,17 +36,33 @@ export interface TypesGetClienteContasAnuncio {
   };
 }
 
+export interface TypesGetContaAnuncioAssociada {
+  GetContaAssociadaCliente: {
+    id: number;
+    inicioAssociacao: Date;
+    fimAssociacao?: Date;
+    contaAnuncio: {
+      nome: string;
+    };
+  };
+}
+
 export interface TypesSetClienteContaAnuncio {
   SetClienteContaAnuncio: {
     associacoes: {
       id: number;
-    }[]
+    }[];
+  };
+}
+export interface TypesPutClienteContaAnuncio {
+  PutClienteContaAnuncio: {
+    id: number;
   };
 }
 
 export interface TypesSetTransacaoContaAnuncio {
   SetTransacaoClienteContaAnuncio: {
-    id: number
+    id: number;
   };
 }
 
@@ -66,4 +82,4 @@ export type VariablesSetTrasacaoClienteContaAnuncio = {
   tipo: TipoTransacao;
   valor: number;
   contaDestinoId: number | null;
-}
+};

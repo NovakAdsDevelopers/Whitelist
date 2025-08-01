@@ -76,18 +76,18 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
       setFee(data.GetCliente.fee);
 
       const contas = dataAssociadas?.GetContasAssociadasPorCliente?.result ?? [];
-
+      console.log('Contas associadas:', contas);
       const totalDepositos = contas.reduce((total, conta) => total + (conta.depositoTotal ?? 0), 0);
 
       const totalGastos = contas.reduce((total, conta) => total + (conta.gastoTotal ?? 0), 0);
 
-      const saldoCalculado = totalDepositos - totalGastos;
+      const saldoCalculado = totalDepositos - totalGastos * 100;
 
       setSaldo(saldoCalculado); // saldo correto com negativos respeitados
       setDepositoTotal(data.GetCliente.depositoTotal);
       setAlocacaoTotal(totalDepositos);
       setSaldoCliente(data.GetCliente.saldoCliente);
-      setGastoTotal(data.GetCliente.gastoTotal);
+      setGastoTotal(totalGastos * 100);
     }
   }, [data, dataAssociadas]);
 

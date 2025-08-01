@@ -34,7 +34,30 @@ export const GET_CLIENTE_CONTA_ANUNCIO = gql`
   }
 `;
 
+export const GET_CONTA_ANUNCIO_ASSOCIADA = gql`
+  query GetContaAssociadaCliente($clienteId: Float!) {
+    GetContaAssociadaCliente(clienteId: $clienteId) {
+      id
+      inicioAssociacao
+      fimAssociacao
+      contaAnuncio {
+        nome
+      }
+    }
+  }
+`;
+
 export const SET_CLIENTE_CONTA_ANUNCIO = gql`
+  mutation SetClienteContaAnuncio($data: ClienteContaAnuncioCreateManyInput!) {
+    SetClienteContaAnuncio(data: $data) {
+      associacoes {
+        id
+      }
+    }
+  }
+`;
+
+export const PUT_CLIENTE_CONTA_ANUNCIO = gql`
   mutation SetClienteContaAnuncio($data: ClienteContaAnuncioCreateManyInput!) {
     SetClienteContaAnuncio(data: $data) {
       associacoes {

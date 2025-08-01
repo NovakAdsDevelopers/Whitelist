@@ -12,7 +12,7 @@ import {
 } from '@/components';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { IContasAnuncioLogData } from './ContasAnuncioLogData'; // Mudança do nome para ClientesLogData
+import { IContasAnuncioLogData } from './ContasAnuncioLogData';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useQueryClienteContasAnuncio } from '@/graphql/services/ClienteContaAnuncio';
@@ -20,12 +20,13 @@ import { ModalAssociateAccount } from '@/partials/modals/clientes/associar-conta
 import { useClient } from '@/auth/providers/ClientProvider';
 import ModalMoneyTransfer from '@/partials/modals/clientes/contas/Modal';
 import { Database, Loader2 } from 'lucide-react';
+import { metaApi } from '@/services/connection';
+import { ModalClienteContaAnuncioEdit } from '@/partials/modals/cliente-conta-anuncio/edit';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;
 }
 
-// Componente principal ClientesLog
 const ContasAnuncioLog = () => {
   const { id } = useParams();
   const variables = useMemo(
@@ -39,9 +40,34 @@ const ContasAnuncioLog = () => {
     []
   );
 
-  const { data, loading } = useQueryClienteContasAnuncio(variables);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [openModalEdit, setOpenModalEdit] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // Formatando os dados para o DataGrid
+  const handleEditClick = (id: string) => {
+    setSelectedId(id);
+    setOpenModalEdit(true);
+  };
+
+  const { data, loading, refetch } = useQueryClienteContasAnuncio(variables);
+
+  async function syncAccount(conta_anuncio_id: string) {
+    setIsSyncing(true);
+    try {
+      const res = await metaApi.get(`/sync-ads/${conta_anuncio_id}`);
+      if (res.status === 200) {
+        toast.success(res.data.message || 'Sincronização com o Meta concluída!');
+        await refetch();
+      } else {
+        toast.error(res.data.error || 'Erro ao sincronizar com o Meta.');
+      }
+    } catch {
+      toast.error('Erro inesperado.');
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
   const contasAnunciosData: IContasAnuncioLogData[] = useMemo(() => {
     return (
       data?.GetContasAssociadasPorCliente?.result?.map((item) => ({
@@ -58,9 +84,6 @@ const ContasAnuncioLog = () => {
     );
   }, [data]);
 
-  console.log(contasAnunciosData);
-
-  // Componente de filtro para a coluna
   const ColumnInputFilter = <TData, TValue>({ column }: IColumnFilterProps<TData, TValue>) => {
     return (
       <Input
@@ -103,12 +126,8 @@ const ContasAnuncioLog = () => {
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
-
           return typeof value === 'number' && !isNaN(value)
-            ? new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(value / 100)
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
@@ -120,18 +139,11 @@ const ContasAnuncioLog = () => {
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
-          const numberValue =
-            typeof value === 'string'
-              ? parseInt(value, 10)
-              : typeof value === 'number'
-                ? value
-                : null;
-
+          const numberValue = typeof value === 'string' ? parseInt(value, 10) : value;
           return typeof numberValue === 'number' && !isNaN(numberValue)
-            ? new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(Math.max(0, numberValue / 100)) // 👈 formatação com divisão por 100
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                Math.max(0, numberValue / 100)
+              )
             : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
@@ -144,13 +156,11 @@ const ContasAnuncioLog = () => {
         cell: (info) => {
           const value = info.getValue();
           return typeof value === 'number'
-            ? new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(value / 100)
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                value / 100
+              )
             : '-';
         },
-
         meta: { headerClassName: 'min-w-[200px]' }
       },
       {
@@ -172,15 +182,39 @@ const ContasAnuncioLog = () => {
         id: 'click',
         header: () => '',
         enableSorting: false,
-        cell: ({ row }) => (
-          <Link
-            to={`/meta/${row.original.id}/insights`}
-            title="Contas de Anúncio"
-            className="btn btn-icon btn-light btn-clear btn-sm"
-          >
-            <KeenIcon icon="data" />
-          </Link>
-        ),
+        cell: ({ row }) => {
+          const conta_anuncio_id = row.original.id;
+          return (
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => syncAccount(conta_anuncio_id)}
+                variant={isSyncing ? 'default' : 'light'}
+                size="sm"
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <KeenIcon icon="arrows-circle" />
+                )}
+              </Button>
+
+              <Button onClick={() => handleEditClick(conta_anuncio_id)} variant="light" size="sm">
+                <KeenIcon icon="setting-4" />
+              </Button>
+
+              <Link
+                to={`/meta/${conta_anuncio_id}/insights`}
+                title="Contas de Anúncio"
+                className="btn btn-icon btn-light btn-clear btn-sm"
+              >
+                <Button variant="light" size="sm">
+                  <KeenIcon icon="data" />
+                </Button>
+              </Link>
+            </div>
+          );
+        },
         meta: { headerClassName: 'w-[60px]' }
       }
     ],
@@ -208,15 +242,12 @@ const ContasAnuncioLog = () => {
     const { id } = useParams();
 
     useEffect(() => {
-      if (id) {
-        setClientInfo(Number(id)); // Convertendo string para número
-      }
+      if (id) setClientInfo(Number(id));
     }, [id]);
 
     return (
       <div className="card-header flex-wrap px-5 py-4 border-b-0">
         <h3 className="card-title">{name ? 'Cliente: ' + name : ''}</h3>
-
         <div className="flex flex-wrap items-center gap-2.5">
           <Link to={`/meta/${id}/depositos`}>
             <Button variant="light" size="sm">
@@ -224,20 +255,16 @@ const ContasAnuncioLog = () => {
               Depósitos
             </Button>
           </Link>
-
           <Button variant="light" size="sm" onClick={() => setShow(true)}>
             <KeenIcon icon="plus" />
             Movimentação
           </Button>
-
           <Button variant="secondary" size="sm" onClick={() => setShow2(true)}>
             <KeenIcon icon="plus" />
             Adicionar Conta de Anuncio
           </Button>
-
           <ModalAssociateAccount open={show2} onOpenChange={() => setShow2(false)} />
           <ModalMoneyTransfer open={show} onClose={() => setShow(false)} />
-
           <DataGridColumnVisibility table={table} />
         </div>
       </div>
@@ -246,47 +273,37 @@ const ContasAnuncioLog = () => {
 
   return (
     <>
-      {loading ? (
-         <DataGrid
-          columns={columns}
-          data={contasAnunciosData}
-          rowSelection={true}
-          onRowSelectionChange={handleRowSelection}
-          pagination={{ size: 10 }}
-          sorting={[{ id: 'timestamp', desc: false }]}
-          toolbar={<Toolbar />}
-          layout={{ card: true }}
-          messages={{
-            loading: true,
-            empty: (
-              <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
-                <Loader2 className="animate-spin text-muted-foreground" />
-                Carregando contas de anúncio...
-              </div>
-            )
-          }}
-        />
-      ) : (
-        <DataGrid
-          columns={columns}
-          data={contasAnunciosData}
-          rowSelection={true}
-          onRowSelectionChange={handleRowSelection}
-          pagination={{ size: 10 }}
-          sorting={[{ id: 'timestamp', desc: false }]}
-          toolbar={<Toolbar />}
-          layout={{ card: true }}
-          messages={{
-            loading: true,
-            empty: (
-              <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
-                <Database className="text-muted-foreground pb-2" />
-                Nenhuma conta associada ao cliente
-              </div>
-            )
-          }}
-        />
-      )}
+      <DataGrid
+        columns={columns}
+        data={contasAnunciosData}
+        rowSelection={true}
+        onRowSelectionChange={handleRowSelection}
+        pagination={{ size: 10 }}
+        sorting={[{ id: 'timestamp', desc: false }]}
+        toolbar={<Toolbar />}
+        layout={{ card: true }}
+        messages={{
+          loading: true,
+          empty: loading ? (
+            <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
+              <Loader2 className="animate-spin text-muted-foreground" />
+              Carregando contas de anúncio...
+            </div>
+          ) : (
+            <div className="text-center flex justify-center items-center flex-col w-full text-muted-foreground text-sm">
+              <Database className="text-muted-foreground pb-2" />
+              Nenhuma conta associada ao cliente
+            </div>
+          )
+        }}
+      />
+
+      {/* Modal de edição de conta de anúncio */}
+      <ModalClienteContaAnuncioEdit
+        open={openModalEdit}
+        onClose={() => setOpenModalEdit(false)}
+        id={selectedId}
+      />
     </>
   );
 };

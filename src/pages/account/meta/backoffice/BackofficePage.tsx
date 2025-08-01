@@ -5,11 +5,10 @@ import { Container } from '@/components/container';
 import { Toolbar, ToolbarDescription, ToolbarHeading, ToolbarPageTitle } from '@/partials/toolbar';
 import { PageNavbar } from '@/pages/account';
 
-import { DashoboardMetaContent } from '.';
+import { BackofficeContent } from './BackofficeContent';
 import { useLayout } from '@/providers';
-import { KeenIcon } from '@/components';
 
-const PainelRelatorioPage = () => {
+const BackofficePage = () => {
   const { currentLayout } = useLayout();
 
   return (
@@ -23,8 +22,14 @@ const PainelRelatorioPage = () => {
               <ToolbarPageTitle />
               <ToolbarDescription>
                 <div className="flex items-center gap-2">
-                  <KeenIcon icon="document" className="text-primary text-lg" />
-                  <h1 className="text-lg text-gray-700">Painel de Relatórios</h1>
+                  <span className="text-sm text-gray-700">19 issues need your attention</span>
+                  <span className="size-0.75 bg-gray-600 rounded-full"></span>
+                  <Link
+                    to="/account/security/security-log"
+                    className="font-medium btn btn-link link"
+                  >
+                    Security Log
+                  </Link>
                 </div>
               </ToolbarDescription>
             </ToolbarHeading>
@@ -33,10 +38,10 @@ const PainelRelatorioPage = () => {
       )}
 
       <Container>
-        <DashoboardMetaContent />
+        <BackofficeContent />
       </Container>
     </Fragment>
   );
 };
 
-export { PainelRelatorioPage };
+export { BackofficePage };

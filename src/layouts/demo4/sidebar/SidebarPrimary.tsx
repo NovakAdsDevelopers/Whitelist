@@ -23,6 +23,12 @@ const menuItems: IMenuItem[] = [
     tooltip: 'Meta WhiteList',
     path: '/',
     rootPath: '/meta'
+  },
+  {
+    icon: 'chart-pie-4',
+    tooltip: 'Backoffice',
+    path: '/backoffice',
+    rootPath: '/backoffice'
   }
 ];
 
