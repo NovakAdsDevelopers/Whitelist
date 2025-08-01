@@ -6,14 +6,21 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { toAbsoluteUrl } from '@/utils';
+import { FormClienteContaAnuncioEdit } from './Form';
 
 interface IModalClienteContaAnuncioEditProps {
   open: boolean;
   onClose: () => void;
   id: string | null;
+  idCliente: string;
 }
 
-const ModalClienteContaAnuncioEdit = ({ open, onClose, id }: IModalClienteContaAnuncioEditProps) => {
+const ModalClienteContaAnuncioEdit = ({
+  open,
+  onClose,
+  id,
+  idCliente
+}: IModalClienteContaAnuncioEditProps) => {
   if (!id) return null;
 
   return (
@@ -31,7 +38,7 @@ const ModalClienteContaAnuncioEdit = ({ open, onClose, id }: IModalClienteContaA
               alt="Edit Illustration"
             />
           </div>
-
+          <FormClienteContaAnuncioEdit onClose={onClose} idAssociacao={id} idCliente={idCliente} />
         </DialogBody>
       </DialogContent>
     </Dialog>

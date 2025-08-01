@@ -58,11 +58,9 @@ export const SET_CLIENTE_CONTA_ANUNCIO = gql`
 `;
 
 export const PUT_CLIENTE_CONTA_ANUNCIO = gql`
-  mutation SetClienteContaAnuncio($data: ClienteContaAnuncioCreateManyInput!) {
-    SetClienteContaAnuncio(data: $data) {
-      associacoes {
-        id
-      }
+  mutation PutClienteContaAnuncio($data: ClienteContaAnuncioUpdateInput!) {
+    PutClienteContaAnuncio(data: $data) {
+      id
     }
   }
 `;

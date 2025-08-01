@@ -75,6 +75,12 @@ export type VariablesSetClienteContaAnuncio = {
   }[];
 };
 
+export type VariablesPutClienteContaAnuncio = {
+  id: string;
+  inicioAssociacao: string;
+  fimAssociacao?: string | null;
+};
+
 export type VariablesSetTrasacaoClienteContaAnuncio = {
   clienteId: number;
   usuarioId: number;

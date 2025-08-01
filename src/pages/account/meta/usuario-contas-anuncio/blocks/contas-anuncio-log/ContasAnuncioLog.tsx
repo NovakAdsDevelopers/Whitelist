@@ -79,7 +79,8 @@ const ContasAnuncioLog = () => {
         gastoAPI: Number(item.contaAnuncio.gastoAPI),
         gastoTotal: item.gastoTotal,
         depositoTotal: item.depositoTotal,
-        saldo: item.saldo
+        saldo: item.saldo,
+        idAssociacao: item.id.toString()
       })) || []
     );
   }, [data]);
@@ -95,8 +96,14 @@ const ContasAnuncioLog = () => {
     );
   };
 
-  const columns = useMemo<ColumnDef<IContasAnuncioLogData>[]>(
-    () => [
+  const columns = useMemo<ColumnDef<IContasAnuncioLogData>[]>(() => {
+    const formatCurrency = (value: number) =>
+      new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(value);
+
+    return [
       {
         accessorKey: 'id',
         header: () => <DataGridRowSelectAll />,
@@ -126,9 +133,7 @@ const ContasAnuncioLog = () => {
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
-          return typeof value === 'number' && !isNaN(value)
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-            : '-';
+          return typeof value === 'number' && !isNaN(value) ? formatCurrency(value) : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
@@ -139,27 +144,18 @@ const ContasAnuncioLog = () => {
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
-          const numberValue = typeof value === 'string' ? parseInt(value, 10) : value;
-          return typeof numberValue === 'number' && !isNaN(numberValue)
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                Math.max(0, numberValue / 100)
-              )
-            : '-';
+          return typeof value === 'number' && !isNaN(value) ? formatCurrency(value) : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
       {
-        id: 'saldoDisponivel',
         accessorFn: (row) => row.saldo,
+        id: 'saldoDisponivel',
         header: ({ column }) => <DataGridColumnHeader title="Saldo Disponível" column={column} />,
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
-          return typeof value === 'number'
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                value / 100
-              )
-            : '-';
+          return typeof value === 'number' && !isNaN(value) ? formatCurrency(value) : '-';
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
@@ -184,6 +180,8 @@ const ContasAnuncioLog = () => {
         enableSorting: false,
         cell: ({ row }) => {
           const conta_anuncio_id = row.original.id;
+          const idAssociacao = row.original.idAssociacao;
+
           return (
             <div className="flex items-center gap-2">
               <Button
@@ -199,7 +197,7 @@ const ContasAnuncioLog = () => {
                 )}
               </Button>
 
-              <Button onClick={() => handleEditClick(conta_anuncio_id)} variant="light" size="sm">
+              <Button onClick={() => handleEditClick(idAssociacao)} variant="light" size="sm">
                 <KeenIcon icon="setting-4" />
               </Button>
 
@@ -217,9 +215,8 @@ const ContasAnuncioLog = () => {
         },
         meta: { headerClassName: 'w-[60px]' }
       }
-    ],
-    []
-  );
+    ];
+  }, []);
 
   const handleRowSelection = (state: RowSelectionState) => {
     const selectedRowIds = Object.keys(state);
@@ -303,6 +300,7 @@ const ContasAnuncioLog = () => {
         open={openModalEdit}
         onClose={() => setOpenModalEdit(false)}
         id={selectedId}
+        idCliente={id!}
       />
     </>
   );

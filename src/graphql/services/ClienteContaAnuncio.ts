@@ -11,6 +11,7 @@ import {
   TypesGetContaAnuncioAssociada,
   TypesPutClienteContaAnuncio,
   TypesSetClienteContaAnuncio,
+  VariablesPutClienteContaAnuncio,
   VariablesSetClienteContaAnuncio,
   VariablesSetTrasacaoClienteContaAnuncio
 } from '../types/ClienteContaAnuncio';
@@ -85,7 +86,7 @@ export function useSetClienteContasAnuncio(clientID: number) {
 export function usePutClienteContasAnuncio(clientID: number) {
   const [mutate, { data, loading, error }] = useMutation<
     TypesPutClienteContaAnuncio,
-    { data: VariablesSetClienteContaAnuncio }
+    { data: VariablesPutClienteContaAnuncio }
   >(PUT_CLIENTE_CONTA_ANUNCIO, {
     fetchPolicy: 'network-only',
     refetchQueries: () => [
@@ -107,7 +108,7 @@ export function usePutClienteContasAnuncio(clientID: number) {
     }
   });
 
-  const createClienteContasAnuncio = async (variables: VariablesSetClienteContaAnuncio) => {
+  const updateClienteContaAnuncio = async (variables: VariablesPutClienteContaAnuncio) => {
     const response = await mutate({
       variables: { data: variables },
       refetchQueries: () => [
@@ -129,7 +130,7 @@ export function usePutClienteContasAnuncio(clientID: number) {
     return response.data;
   };
 
-  return { createClienteContasAnuncio, data, loading, error };
+  return { updateClienteContaAnuncio, data, loading, error };
 }
 
 export function useSetTransacaoClienteContasAnuncio(clientID: number) {

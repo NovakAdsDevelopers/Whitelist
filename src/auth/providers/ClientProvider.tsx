@@ -77,7 +77,8 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
 
       const contas = dataAssociadas?.GetContasAssociadasPorCliente?.result ?? [];
       console.log('Contas associadas:', contas);
-      const totalDepositos = contas.reduce((total, conta) => total + (conta.depositoTotal ?? 0), 0);
+      const totalDepositos =
+        contas.reduce((total, conta) => total + (conta.depositoTotal ?? 0), 0) * 100;
 
       const totalGastos = contas.reduce((total, conta) => total + (conta.gastoTotal ?? 0), 0);
 
