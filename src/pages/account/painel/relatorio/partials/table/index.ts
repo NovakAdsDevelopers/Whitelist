@@ -1,2 +1,2 @@
-export * from './DepositosLog';
-export * from './DepositosLogData';
+export * from './TableLog';
+export * from './TableType';
