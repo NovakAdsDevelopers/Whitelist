@@ -5,8 +5,19 @@ import { FilterPeriod } from './partials/FilterPeriod';
 import { EarningsChart } from './partials/EarningChart';
 import { PieChart } from './partials/PieChart';
 import { TableRanking } from './partials/table/TableLog';
+import { usePanel } from '@/auth/providers/PanelProvider';
+
+const formatBRL = (value: number) =>
+  new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value);
 
 const DashoboardMetaContent = () => {
+  const { gastoTotal, saldo, saldoMeta, contasAtivas, contasInativas } = usePanel();
+  const totalContas = contasAtivas + contasInativas;
+  const percentualComSaldo =
+    totalContas > 0 ? ((contasAtivas / totalContas) * 100).toFixed(2) : '0.00';
   return (
     <>
       <FilterPeriod />
@@ -15,16 +26,16 @@ const DashoboardMetaContent = () => {
         <Card
           className="col-span-4"
           title="Gasto Total"
-          value="R$ 819,74"
+          value={formatBRL(gastoTotal)}
           icon={<KeenIcon icon="dollar" className="text-primary" />}
-          subtitle="4 contas em atividade"
+          subtitle={`${contasAtivas} contas em atividade`}
         />
         <Card
           className="col-span-4"
           title="Saldo Total"
-          value="R$ 67,890"
+          value={formatBRL(saldo)}
           icon={<KeenIcon icon="dollar" className="text-primary" />}
-          subtitle="R$ 2.5k Inseridos hoje"
+          subtitle={`VERIFICAR inseridos no período`}
         />
 
         {/* Card da direita ocupando altura das duas linhas */}
@@ -35,22 +46,25 @@ const DashoboardMetaContent = () => {
         >
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-lg">60.00%</span>
-              <div className="flex flex-col justify-center text-right">
+              <div className="w-full flex justify-between text-center">
                 <span>
                   <span className="w-3 h-3 bg-opacity-100 bg-primary rounded-full inline-block mr-1"></span>
-                  6 contas com saldo
+                  {contasAtivas} Contas Ativas
                 </span>
                 <span>
                   <span className="w-3 h-3 bg-opacity-100 bg-gray-800 rounded-full inline-block mr-1"></span>
-                  4 contas sem saldo
+                  {contasInativas} Contas Inativas
                 </span>
               </div>
             </div>
             <PieChart />
             <div className="flex justify-between mt-4 text-sm">
               <span>Saldo total no meta:</span>
-              <span className="font-semibold">$99,999</span>
+              <span className="font-semibold">{formatBRL(saldoMeta)}</span>
+            </div>
+            <div className="flex justify-between mt-4 text-sm">
+              <span>Percetual contas ativas:</span>
+              <span className="font-semibold">{percentualComSaldo}%</span>
             </div>
           </div>
         </Card>
@@ -62,7 +76,8 @@ const DashoboardMetaContent = () => {
           </Card>
         </div>
       </div>
-      <div className='mt-4'>
+
+      <div className="mt-4">
         <TableRanking />
       </div>
     </>

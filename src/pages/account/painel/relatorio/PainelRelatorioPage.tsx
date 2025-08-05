@@ -8,6 +8,7 @@ import { PageNavbar } from '@/pages/account';
 import { DashoboardMetaContent } from '.';
 import { useLayout } from '@/providers';
 import { KeenIcon } from '@/components';
+import { PanelProvider } from '@/auth/providers/PanelProvider';
 
 const PainelRelatorioPage = () => {
   const { currentLayout } = useLayout();
@@ -33,7 +34,9 @@ const PainelRelatorioPage = () => {
       )}
 
       <Container>
-        <DashoboardMetaContent />
+        <PanelProvider>
+          <DashoboardMetaContent />
+        </PanelProvider>
       </Container>
     </Fragment>
   );
