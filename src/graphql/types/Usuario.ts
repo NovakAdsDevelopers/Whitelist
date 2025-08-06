@@ -13,7 +13,7 @@ export interface TypesGetUsuarios {
       tipo: TipoUsuario;
       criadoEm: Date;
       atualizadoEm: Date;
-    };
+    }[];
     pageInfo: {
       currentPage: number;
       totalPages: number;

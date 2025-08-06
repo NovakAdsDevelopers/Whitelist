@@ -25,6 +25,21 @@ const SidebarMenuBackoffice = () => {
           active: true
         }
       ]
+    },
+    {
+      title: 'Gestão de Usuários',
+      children: [
+        {
+          title: 'Usuários',
+          path: '/backoffice/usuarios',
+          active: false
+        },
+         {
+          title: 'Solicitações',
+          path: '/backoffice/solicitacoes',
+          active: false
+        }
+      ]
     }
   ];
 

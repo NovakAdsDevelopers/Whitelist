@@ -97,6 +97,8 @@ import { PainelGestaoContasPage } from '@/pages/account/painel/gestaoContas';
 import { PainelResumoContasPage } from '@/pages/account/painel/resumoContas';
 import { PainelContasAnuncioPage } from '@/pages/account/painel/contas-anuncio';
 import { BackofficePage } from '@/pages/account/meta/backoffice';
+import { UsuariosPage } from '@/pages/account/meta/backoffice/usuarios/UsuariosPage';
+import { SolicitacoesPage } from '@/pages/account/meta/backoffice/solicitacoes/SolicitacoesPage';
 
 const AppRoutingSetup = (): ReactElement => {
   return (
@@ -268,6 +270,8 @@ const AppRoutingSetup = (): ReactElement => {
               <ClientProvider>
                 <Routes>
                   <Route index element={<BackofficePage />} />
+                  <Route path="usuarios" element={<UsuariosPage />} />
+                  <Route path="solicitacoes" element={<SolicitacoesPage />} />
                 </Routes>
               </ClientProvider>
             }
