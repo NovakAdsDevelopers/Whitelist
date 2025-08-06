@@ -23,5 +23,12 @@ export interface PainelRelatorioRankingTypes {
     moeda: string;
     fusoHorario: string;
     status: number;
-  }[]
+  }[];
+}
+
+export interface PainelRelatorioLineChartTypes {
+  GetInsightsGastosPeriodos: {
+    categories: string[];
+    data: number[];
+  };
 }

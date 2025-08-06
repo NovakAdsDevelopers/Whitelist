@@ -31,3 +31,12 @@ export const GET_PANEL_RELATORIO_INSIGHTS_RANKING = gql`
     }
   }
 `;
+
+export const GET_PANEL_INSIGHTS_LINE_CHART = gql`
+  query GetInsightsGastosPeriodos($type: String!) {
+    GetInsightsGastosPeriodos(type: $type) {
+      categories
+      data
+    }
+  }
+`;

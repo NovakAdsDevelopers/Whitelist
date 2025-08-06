@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import ApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
-
 import {
   Select,
   SelectContent,
@@ -9,21 +8,25 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { useQuery } from '@apollo/client';
+import { PainelRelatorioLineChartTypes } from '@/graphql/types/PainelRelatorio';
+import { GET_PANEL_INSIGHTS_LINE_CHART } from '@/graphql/schemas/PainelRelatorio';
 
 const EarningsChart = () => {
+  const [type, setType] = useState<'week' | 'mounth' | 'tree-mouth' | 'year'>('mounth');
+  const { data, refetch } = useQuery<PainelRelatorioLineChartTypes>(GET_PANEL_INSIGHTS_LINE_CHART, {
+    variables: { type }
+  });
+
   const [charData, setCharData] = useState<number[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
 
-  const categories: string[] = [
-    'Jan', 'Feb', 'Mar', 'Apr',
-    'May', 'Jun', 'Jul', 'Aug',
-    'Sep', 'Oct', 'Nov', 'Dec'
-  ];
-
-  // Simulando dados fictícios
   useEffect(() => {
-    const fakeData = [15, 18, 25, 35, 28, 42, 38, 50, 47, 53, 59, 62];
-    setCharData(fakeData);
-  }, []);
+    if (data?.GetInsightsGastosPeriodos) {
+      setCharData(data.GetInsightsGastosPeriodos.data);
+      setCategories(data.GetInsightsGastosPeriodos.categories);
+    }
+  }, [data]);
 
   const options: ApexOptions = {
     series: [
@@ -43,7 +46,7 @@ const EarningsChart = () => {
       curve: 'smooth',
       show: true,
       width: 3,
-      colors: ['#1e3a8a'] // Tailwind `blue-900`
+      colors: ['#1e3a8a']
     },
     xaxis: {
       categories,
@@ -51,7 +54,7 @@ const EarningsChart = () => {
       axisTicks: { show: false },
       labels: {
         style: {
-          colors: '#6b7280', // Tailwind `gray-500`
+          colors: '#6b7280',
           fontSize: '12px'
         }
       },
@@ -66,7 +69,6 @@ const EarningsChart = () => {
     },
     yaxis: {
       min: 0,
-      max: 100,
       tickAmount: 5,
       labels: {
         style: {
@@ -99,7 +101,7 @@ const EarningsChart = () => {
     },
     markers: {
       size: 0,
-      colors: ['#bfdbfe'], // Tailwind `blue-200`
+      colors: ['#bfdbfe'],
       strokeColors: ['#1e3a8a'],
       strokeWidth: 4,
       hover: { size: 8 }
@@ -111,7 +113,7 @@ const EarningsChart = () => {
       }
     },
     grid: {
-      borderColor: '#e5e7eb', // Tailwind `gray-200`
+      borderColor: '#e5e7eb',
       strokeDashArray: 5,
       yaxis: { lines: { show: true } },
       xaxis: { lines: { show: false } }
@@ -121,25 +123,24 @@ const EarningsChart = () => {
   return (
     <div className="bg-white rounded-lg shadow p-4 h-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Earnings</h3>
+        <h3 className="text-lg font-semibold text-gray-800">Gastos total por periodo</h3>
         <div className="flex items-center gap-5">
-          <label className="flex items-center text-sm gap-2">
-            <input
-              type="checkbox"
-              className="accent-blue-600"
-              readOnly
-            />
-            Referrals only
-          </label>
-          <Select defaultValue="1">
-            <SelectTrigger className="w-28" size="sm">
-              <SelectValue placeholder="Select" />
+          
+          <Select
+            defaultValue={type}
+            onValueChange={(value) => {
+              setType(value as typeof type);
+              refetch({ type: value });
+            }}
+          >
+            <SelectTrigger className="w-32" size="sm">
+              <SelectValue placeholder="Período" />
             </SelectTrigger>
             <SelectContent className="w-32">
-              <SelectItem value="1">1 month</SelectItem>
-              <SelectItem value="3">3 months</SelectItem>
-              <SelectItem value="6">6 months</SelectItem>
-              <SelectItem value="12">12 months</SelectItem>
+              <SelectItem value="week">Última semana</SelectItem>
+              <SelectItem value="mounth">Mês atual</SelectItem>
+              <SelectItem value="tree-mouth">Últimos 3 meses</SelectItem>
+              <SelectItem value="year">Ano atual</SelectItem>
             </SelectContent>
           </Select>
         </div>

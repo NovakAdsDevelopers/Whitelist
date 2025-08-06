@@ -45,7 +45,7 @@ const DashoboardMetaContent = () => {
           icon={<KeenIcon icon="bar-chart" className="text-primary" />}
         >
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 mt-8">
               <div className="w-full flex justify-between text-center">
                 <span>
                   <span className="w-3 h-3 bg-opacity-100 bg-primary rounded-full inline-block mr-1"></span>

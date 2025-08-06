@@ -1,10 +1,17 @@
-import { useState } from 'react';
 import ApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
+import { usePanel } from '@/auth/providers/PanelProvider';
 
 const PieChart = () => {
-  const [series] = useState<number[]>([60, 40]);
-  const [labels] = useState<string[]>(['Ativos', 'Inativos']);
+  const { contasAtivas, contasInativas } = usePanel();
+
+  // Garantir que os dados existem antes de renderizar
+  if (contasAtivas === undefined || contasInativas === undefined) {
+    return <div>Carregando gráfico...</div>;
+  }
+
+  const series = [contasAtivas, contasInativas];
+  const labels = ['Ativos', 'Inativos'];
 
   const options: ApexOptions = {
     chart: {
@@ -38,7 +45,13 @@ const PieChart = () => {
 
   return (
     <div className="flex justify-center w-full max-w-sm">
-      <ApexChart options={options} series={series} type="pie" width="100%" height={300} />
+      <ApexChart
+        options={options}
+        series={series}
+        type="pie"
+        width="100%"
+        height={300}
+      />
     </div>
   );
 };

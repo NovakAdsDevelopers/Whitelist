@@ -231,10 +231,11 @@ const ContasAnuncioLog = () => {
     }
   };
 
-  const Toolbar = () => {
+  const Toolbar = ({ contas }: { contas: IContasAnuncioLogData[] }) => {
     const { table } = useDataGrid();
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
+    const [syncingAll, setSyncingAll] = useState(false);
     const { name, setClientInfo } = useClient();
     const { id } = useParams();
 
@@ -242,10 +243,45 @@ const ContasAnuncioLog = () => {
       if (id) setClientInfo(Number(id));
     }, [id]);
 
+    const handleSyncAll = async () => {
+      const ids = contas.map((c) => c.id);
+      if (ids.length === 0) {
+        toast.warning('Nenhuma conta para sincronizar.');
+        return;
+      }
+
+      setSyncingAll(true);
+      try {
+        const res = await metaApi.post('/sync-ads-by-ids', {
+          account_ids: ids
+        });
+
+        if (res.status === 200) {
+          toast.success(res.data.message || 'Contas sincronizadas com sucesso!');
+        } else {
+          toast.error(res.data.error || 'Erro ao sincronizar contas.');
+        }
+      } catch (err) {
+        toast.error('Erro inesperado ao sincronizar contas.');
+      } finally {
+        setSyncingAll(false);
+      }
+    };
+
     return (
       <div className="card-header flex-wrap px-5 py-4 border-b-0">
         <h3 className="card-title">{name ? 'Cliente: ' + name : ''}</h3>
         <div className="flex flex-wrap items-center gap-2.5">
+          <Button variant="light" size="sm" onClick={handleSyncAll} disabled={syncingAll}>
+            {syncingAll ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <KeenIcon icon="arrows-circle" />
+                Sincronizar
+              </>
+            )}
+          </Button>
           <Link to={`/meta/${id}/depositos`}>
             <Button variant="light" size="sm">
               <KeenIcon icon="dollar" />
@@ -277,7 +313,7 @@ const ContasAnuncioLog = () => {
         onRowSelectionChange={handleRowSelection}
         pagination={{ size: 10 }}
         sorting={[{ id: 'timestamp', desc: false }]}
-        toolbar={<Toolbar />}
+        toolbar={<Toolbar contas={contasAnunciosData} />}
         layout={{ card: true }}
         messages={{
           loading: true,
