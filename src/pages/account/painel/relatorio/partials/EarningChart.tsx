@@ -12,6 +12,14 @@ import { useQuery } from '@apollo/client';
 import { PainelRelatorioLineChartTypes } from '@/graphql/types/PainelRelatorio';
 import { GET_PANEL_INSIGHTS_LINE_CHART } from '@/graphql/schemas/PainelRelatorio';
 
+const brl = (n: number, withCents = true) =>
+  new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    maximumFractionDigits: withCents ? 2 : 0,
+    minimumFractionDigits: withCents ? 2 : 0
+  }).format(n);
+
 const EarningsChart = () => {
   const [type, setType] = useState<'week' | 'mounth' | 'tree-mouth' | 'year'>('mounth');
   const { data, refetch } = useQuery<PainelRelatorioLineChartTypes>(GET_PANEL_INSIGHTS_LINE_CHART, {
@@ -31,7 +39,7 @@ const EarningsChart = () => {
   const options: ApexOptions = {
     series: [
       {
-        name: 'Earnings',
+        name: 'Gastos',
         data: charData
       }
     ],
@@ -75,25 +83,22 @@ const EarningsChart = () => {
           colors: '#6b7280',
           fontSize: '12px'
         },
-        formatter: (val) => `$${val}K`
+        // Exibe moeda (sem centavos no eixo pra não poluir)
+        formatter: (val: number) => brl(val, false)
       }
     },
     tooltip: {
       enabled: true,
-      custom({ series, seriesIndex, dataPointIndex }) {
-        const value = series[seriesIndex][dataPointIndex] * 1000;
-        const month = categories[dataPointIndex];
-        const formatted = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD'
-        }).format(value);
+      custom: ({ series, seriesIndex, dataPointIndex }) => {
+        const value = series[seriesIndex][dataPointIndex]; // já em reais
+        const dia = categories[dataPointIndex] ?? '';
+        const formatted = brl(value, true);
 
         return `
           <div class="flex flex-col gap-2 p-3.5">
-            <div class="font-medium text-2sm text-gray-600">${month}, 2024 Sales</div>
+            <div class="font-medium text-sm text-gray-600">Gasto em ${dia}</div>
             <div class="flex items-center gap-1.5">
-              <div class="font-semibold text-md text-gray-900">${formatted}</div>
-              <span class="badge badge-outline badge-success badge-xs">+24%</span>
+              <div class="font-semibold text-base text-gray-900">${formatted}</div>
             </div>
           </div>
         `;
@@ -123,9 +128,8 @@ const EarningsChart = () => {
   return (
     <div className="bg-white rounded-lg shadow p-4 h-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Gastos total por periodo</h3>
+        <h3 className="text-lg font-semibold text-gray-800">Gastos total por período</h3>
         <div className="flex items-center gap-5">
-          
           <Select
             defaultValue={type}
             onValueChange={(value) => {
@@ -133,10 +137,10 @@ const EarningsChart = () => {
               refetch({ type: value });
             }}
           >
-            <SelectTrigger className="w-32" size="sm">
+            <SelectTrigger className="w-40" size="sm">
               <SelectValue placeholder="Período" />
             </SelectTrigger>
-            <SelectContent className="w-32">
+            <SelectContent className="w-40">
               <SelectItem value="week">Última semana</SelectItem>
               <SelectItem value="mounth">Mês atual</SelectItem>
               <SelectItem value="tree-mouth">Últimos 3 meses</SelectItem>
