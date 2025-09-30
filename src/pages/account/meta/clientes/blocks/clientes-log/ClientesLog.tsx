@@ -41,7 +41,7 @@ const ClienteLinkCell: React.FC<{ id: number }> = ({ id }) => {
   );
 };
 
-const ClienteDeleteCell: React.FC<{ id: number }> = ({ id }) => {
+const ClienteDeleteCell: React.FC<{ id: number, refetch: any }> = ({ id, refetch }) => {
   const { deleteCliente } = useDeleteCliente();
 
   // mutation/service real
@@ -49,6 +49,8 @@ const ClienteDeleteCell: React.FC<{ id: number }> = ({ id }) => {
     try {
       await deleteCliente(id);
       toast.success('Cliente removido com sucesso!');
+
+      await refetch();
     } catch {
       toast.error('Erro ao remover cliente.');
     }
@@ -87,7 +89,7 @@ const ClientesLog = () => {
     []
   );
 
-  const { data, loading } = useQueryClientes(variables);
+  const { data, loading, refetch } = useQueryClientes(variables);
 
   const clientesData: IClienteLogData[] =
     data?.GetClientes?.result?.map((cliente) => ({
@@ -152,7 +154,7 @@ const ClientesLog = () => {
         cell: ({ row }) => (
           <div className="flex justify-center gap-2">
             <ClienteLinkCell id={row.original.id} />
-            {currentUser?.tipo === 'ADMIN' ? <ClienteDeleteCell id={row.original.id} /> : null}
+            {currentUser?.tipo === 'ADMIN' ? <ClienteDeleteCell refetch={refetch} id={row.original.id} /> : null}
           </div>
         ),
         meta: { headerClassName: 'w-[120px]' }
@@ -186,7 +188,7 @@ const ClientesLog = () => {
             <KeenIcon icon="plus" />
             Novo Cliente
           </Button>
-          <ModalCreateCliente open={show} onOpenChange={() => setShow(false)} />
+          <ModalCreateCliente refetch={refetch} open={show} onOpenChange={() => setShow(false)} />
           <DataGridColumnVisibility table={table} />
         </div>
       </div>

@@ -15,13 +15,10 @@ const PainelRelatorioPage = () => {
 
   return (
     <Fragment>
-      <PageNavbar />
-
       {currentLayout?.name === 'demo4-layout' && (
         <Container>
           <Toolbar>
             <ToolbarHeading>
-              <ToolbarPageTitle />
               <ToolbarDescription>
                 <div className="flex items-center gap-2">
                   <KeenIcon icon="document" className="text-primary text-lg" />

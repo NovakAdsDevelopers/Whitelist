@@ -92,13 +92,17 @@ import { DepositosPage } from '@/pages/account/meta/usuario-depositos';
 import { ClientProvider } from '@/auth/providers/ClientProvider';
 import { PainelRelatorioPage } from '@/pages/account/painel/relatorio';
 import { PainelSolicitacoesPage } from '@/pages/account/painel/solicitacoes';
-import { PainelEstoqueContasPage } from '@/pages/account/painel/estoqueContas';
+import { PainelStatusContasPage } from '@/pages/account/painel/statusContas';
 import { PainelGestaoContasPage } from '@/pages/account/painel/gestaoContas';
 import { PainelResumoContasPage } from '@/pages/account/painel/resumoContas';
 import { PainelContasAnuncioPage } from '@/pages/account/painel/contas-anuncio';
 import { BackofficePage } from '@/pages/account/meta/backoffice';
 import { UsuariosPage } from '@/pages/account/meta/backoffice/usuarios/UsuariosPage';
 import { SolicitacoesPage } from '@/pages/account/meta/backoffice/solicitacoes/SolicitacoesPage';
+import { PainelIntegracoesPage } from '@/pages/account/painel/integracoes';
+import { IntegracaoPage } from '@/pages/account/painel/integracoes/IntegracaoPage';
+import { PainelGestaoContasHistory } from '@/pages/account/painel/gestaoContas/HistoricoGastos/PainelGestaoContasHistory';
+import { AdAccountProvider } from '@/auth/providers/AdAccountProvider';
 
 const AppRoutingSetup = (): ReactElement => {
   return (
@@ -253,9 +257,21 @@ const AppRoutingSetup = (): ReactElement => {
               <ClientProvider>
                 <Routes>
                   <Route path="relatorios" index element={<PainelRelatorioPage />} />
-                  <Route path="solicitacoes" index element={<PainelSolicitacoesPage />} />
-                  <Route path="estoque-contas" element={<PainelEstoqueContasPage />} />
+                  <Route path="solicitacoes" element={<PainelSolicitacoesPage />} />
+                  <Route path="integracoes" element={<PainelIntegracoesPage />} />
+                  <Route path="integracoes/:name" element={<IntegracaoPage />} />
+
+                  <Route path="status-contas" element={<PainelStatusContasPage />} />
                   <Route path="gestao-contas" element={<PainelGestaoContasPage />} />
+                  <Route
+                    path="gestao-contas/:id/history"
+                    element={
+                      <AdAccountProvider>
+                        <PainelGestaoContasHistory />
+                      </AdAccountProvider>
+                    }
+                  />
+
                   <Route path="resumo-contas" element={<PainelResumoContasPage />} />
 
                   <Route path="gestao-contas/:id" element={<PainelContasAnuncioPage />} />

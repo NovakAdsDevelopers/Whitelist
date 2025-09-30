@@ -34,12 +34,16 @@ const SidebarMenuPainel = () => {
           path: '/painel/relatorios'
         },
         {
+          title: 'Integrações',
+          path: '/painel/integracoes'
+        },
+        {
           title: 'Solicitações',
           path: '/painel/solicitacoes'
         },
         {
-          title: 'Estoque de Contas',
-          path: '/painel/estoque-contas'
+          title: 'Status de Contas',
+          path: '/painel/status-contas'
         },
         {
           title: 'Gestão de Contas',

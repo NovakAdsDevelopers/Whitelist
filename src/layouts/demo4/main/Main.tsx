@@ -37,7 +37,7 @@ const Main = () => {
           <div className="flex grow rounded-xl bg-[--tw-content-bg] dark:bg-[--tw-content-bg-dark] border border-gray-300 dark:border-gray-200 lg:ms-[--tw-sidebar-width] mt-0 lg:mt-5 m-5">
             <div className="flex flex-col grow lg:scrollable-y-auto lg:[scrollbar-width:auto] lg:light:[--tw-scrollbar-thumb-color:var(--tw-content-scrollbar-color)] pt-5">
               <main className="grow" role="content">
-                <Toolbar>
+                {/* <Toolbar>
                   <ToolbarHeading />
 
                   <ToolbarActions>
@@ -72,7 +72,7 @@ const Main = () => {
                       </MenuItem>
                     </Menu>
                   </ToolbarActions>
-                </Toolbar>
+                </Toolbar> */}
 
                 <Outlet />
               </main>

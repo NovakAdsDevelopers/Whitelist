@@ -17,6 +17,8 @@ interface PanelContextType {
   setStartDate: (date: string | null) => void;
   setEndDate: (date: string | null) => void;
   dataRanking: PainelRelatorioRankingTypes[];
+  BMs: string[];
+  setBMs: (bms: string[]) => void;
 }
 
 const PanelContext = createContext<PanelContextType | undefined>(undefined);
@@ -24,21 +26,31 @@ const PanelContext = createContext<PanelContextType | undefined>(undefined);
 export const PanelProvider = ({ children }: { children: ReactNode }) => {
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
+  const [BMs, setBMs] = useState<string[]>(['']);
+
+
 
   const { data, refetch } = useQuery<PainelRelatorioTypes>(GET_PANEL_INSIGHTS, {
-    variables: { startDate, endDate },
+    variables: { startDate, endDate, bMs:BMs },
     notifyOnNetworkStatusChange: true
   });
+
+  useEffect(() => {
+  refetch({ startDate, endDate, bMs: BMs });
+}, [startDate, endDate, BMs, refetch]);
 
   const { data: dataRankingRaw, refetch: refetchRanking } = useQuery<{
     GetInsightsPanelRelatorioRanking: PainelRelatorioRankingTypes[];
   }>(GET_PANEL_RELATORIO_INSIGHTS_RANKING, {
-    variables: { startDate, endDate },
+    variables: { startDate, endDate, bMs:BMs },
     notifyOnNetworkStatusChange: true
   });
 
   const saldo = data?.GetInsightsPanel?.contasAtivas?.saldoTotal ?? 0;
-  const saldoMeta = data?.GetInsightsPanel?.contasAtivas?.saldoMeta ?? 0;
+  const saldoMeta =
+    (data?.GetInsightsPanel?.contasAtivas?.saldoMeta ?? 0) +
+    (data?.GetInsightsPanel?.contasInativas?.saldoMeta ?? 0);
+
   const gastoTotal = data?.GetInsightsPanel?.contasAtivas?.gastoTotal ?? 0;
   const contasAtivas = data?.GetInsightsPanel?.contasAtivas?.quantidade ?? 0;
   const contasInativas = data?.GetInsightsPanel?.contasInativas?.quantidade ?? 0;
@@ -59,7 +71,9 @@ export const PanelProvider = ({ children }: { children: ReactNode }) => {
       endDate,
       setStartDate,
       setEndDate,
-      dataRanking: dataRankingRaw?.GetInsightsPanelRelatorioRanking ?? []
+      dataRanking: dataRankingRaw?.GetInsightsPanelRelatorioRanking ?? [],
+      BMs,
+      setBMs
     }),
     [saldo, saldoMeta, gastoTotal, contasAtivas, contasInativas, startDate, endDate, dataRankingRaw]
   );

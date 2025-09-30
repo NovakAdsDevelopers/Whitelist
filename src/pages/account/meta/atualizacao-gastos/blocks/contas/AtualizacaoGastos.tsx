@@ -274,7 +274,7 @@ const ContasTable = () => {
             variant="default"
             size="sm"
             onClick={syncAllAccounts}
-            disabled={isSyncingAll || (minutos === 0 && segundos <= 10)}
+            disabled={isSyncingAll }
           >
             {isSyncingAll ? (
               <>

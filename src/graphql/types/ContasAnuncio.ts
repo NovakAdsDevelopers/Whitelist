@@ -20,8 +20,8 @@ export interface TypesGetContasAnuncio {
       limitGasto: string;
       saldoMeta: string;
       ultimaSincronizacao: string;
-    }[]
-  }
+    }[];
+  };
 }
 
 export interface TypesGetAllContasAnuncio {
@@ -46,6 +46,22 @@ export interface TypesGetAllContasAnuncio {
       limitGasto: string;
       saldoMeta: string;
       ultimaSincronizacao: string;
-    }[]
-  }
+    }[];
+  };
+}
+
+export interface TypesGetInsightsAdAccount {
+  GetInsightsAdAccount: {
+    adAccountId: string;
+    periodoUTC: {
+      lt: string;
+      gte: string;
+    };
+    diasNoPeriodo: number;
+    saldoMeta: number;
+    gastoTotal: number;
+    mediaDiaria: number;
+    saldoTotal: number;
+    nome: string;
+  };
 }

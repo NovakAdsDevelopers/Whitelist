@@ -23,6 +23,7 @@ export interface PainelRelatorioRankingTypes {
     moeda: string;
     fusoHorario: string;
     status: number;
+    saldoMeta: string;
   }[];
 }
 

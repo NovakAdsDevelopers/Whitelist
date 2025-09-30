@@ -1,52 +1,56 @@
 import { Options, IOptionsItems } from '../../home/get-started';
+import CalendarTimeGrid, { PersonSchedule } from './partials/Calendar';
 
 const DashoboardMetaContent = () => {
-  const items: IOptionsItems = [
-    {
-      icon: 'subtitle',
-      title: 'Overview',
-      desc: 'A Broad Perspective on Our Comprehensive Security Features and Policies.',
-      path: '/account/security/overview'
-    },
-    {
-      icon: 'icon',
-      title: 'Allowed IP Addresses',
-      desc: 'Specify and Restrict Access Through Authorized IP Address Filtering.',
-      path: '/account/security/allowed-ip-addresses'
-    },
-    {
-      icon: 'setting',
-      title: 'Privacy Settings',
-      desc: 'Customize Your Privacy with User-Controlled Settings and Preferences.',
-      path: '/account/security/privacy-settings'
-    },
-    {
-      icon: 'desktop-mobile',
-      title: 'Trusted Devices',
-      desc: 'Identify and Authorize Devices for Enhanced Account Security.',
-      path: '/account/security/device-management'
-    },
-    {
-      icon: 'cloud-change',
-      title: 'Backup & Recovery',
-      desc: 'Secure and Efficient Backup Solutions with Reliable Recovery Options.',
-      path: '/account/security/backup-and-recovery'
-    },
-    {
-      icon: 'key-square',
-      title: 'Login Sessions',
-      desc: 'Track and Manage Active User Sessions for Security Purposes.',
-      path: '/account/security/current-sessions'
-    },
-    {
-      icon: 'shield-slash',
-      title: 'Security Log',
-      desc: 'Detailed Records of Security Events and Activities for Monitoring.',
-      path: '/account/security/security-log'
-    }
-  ];
+ const SEG = 1, TER = 2, QUA = 3, QUI = 4, SEX = 5, SAB = 6, DOM = 0;
 
-  return <Options items={items} dropdown={false} />;
+const schedules: PersonSchedule[] = [
+  {
+    name: "Adrianna Maria",
+    color: "bg-emerald-500",
+    segments: [
+      { days: [SEG, TER, QUA, QUI, SEX], start: "15:00", end: "18:59" },
+      { days: [SEG, TER, QUA, QUI, SEX], start: "20:00", end: "23:59" },
+      { days: [SAB], start: "08:00", end: "11:59" },
+    ],
+  },
+  {
+    name: "Gabriel Rivas",
+    color: "bg-sky-500",
+    segments: [
+      { days: [SEG, TER, QUA, QUI, SEX, SAB], start: "00:00", end: "02:59" },
+      { days: [SEG, TER, QUA, QUI, SEX, SAB], start: "04:00", end: "06:59" },
+    ],
+  },
+  {
+    name: "Maiana Nascimento",
+    color: "bg-fuchsia-500",
+    segments: [
+      { days: [SEG, TER, QUA, QUI, SEX], start: "06:00", end: "10:59" },
+      { days: [SEG, TER, QUA, QUI, SEX], start: "12:00", end: "14:59" },
+      { days: [DOM], start: "08:00", end: "11:59" },
+    ],
+  },
+  {
+    name: "Nadja Boaventura",
+    color: "bg-orange-500",
+    segments: [
+      { days: [QUA, QUI, SEX], start: "11:00", end: "14:59" },
+      { days: [QUA, QUI, SEX], start: "16:00", end: "19:59" },
+      { days: [SAB, DOM], start: "13:00", end: "16:59" },
+      { days: [SAB, DOM], start: "18:00", end: "22:59" },
+    ],
+  },
+];
+
+
+  return (
+  <div>
+    <div className='w-full'>
+      <CalendarTimeGrid peopleSchedules={schedules} />
+    </div>
+  </div>
+)
 };
 
 export { DashoboardMetaContent };

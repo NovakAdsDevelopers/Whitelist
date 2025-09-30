@@ -33,9 +33,10 @@ const initialValues = {
 
 interface Props {
   onOpenChange: (open: boolean) => void;
+  refetch: any;
 }
 
-const FormCreateCliente = ({ onOpenChange }: Props) => {
+const FormCreateCliente = ({ onOpenChange, refetch }: Props) => {
   const { createCliente, loading } = useSetCliente();
 
   const formik = useFormik({
@@ -54,6 +55,7 @@ const FormCreateCliente = ({ onOpenChange }: Props) => {
         });
 
         onOpenChange(false);
+        refetch();
       } catch (err: any) {
         toast.message('❌ Erro ao criar cliente', {
           description: err.message || 'Ocorreu um erro inesperado.'

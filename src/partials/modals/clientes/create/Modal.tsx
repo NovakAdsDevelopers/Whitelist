@@ -11,10 +11,11 @@ import { FormCreateCliente } from './Form'; // Importando o novo formulário
 
 interface IModalCreateClienteProps {
   open: boolean;
+  refetch: any;
   onOpenChange: () => void;
 }
 
-const ModalCreateCliente = ({ open, onOpenChange }: IModalCreateClienteProps) => {
+const ModalCreateCliente = ({ open, refetch, onOpenChange }: IModalCreateClienteProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[300px]">
@@ -30,7 +31,7 @@ const ModalCreateCliente = ({ open, onOpenChange }: IModalCreateClienteProps) =>
             />
           </div>
 
-          <FormCreateCliente onOpenChange={onOpenChange} />
+          <FormCreateCliente refetch={refetch} onOpenChange={onOpenChange} />
         </DialogBody>
       </DialogContent>
     </Dialog>
