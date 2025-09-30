@@ -14,14 +14,21 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { usePanel } from '@/auth/providers/PanelProvider';
 
+type TableRow = {
+  nome: string;
+  gastoTotal: number;
+  moeda: 'BRL' | 'USD' | string;
+  fusoHorario?: string | null;
+};
+
 const TableActive = () => {
   const { id } = useParams();
-  
-  const data: any = []
 
-  const columns = useMemo<ColumnDef<any>[]>(
+  // Tipagem explícita evita o erro
+  const data: TableRow[] = [];
+
+  const columns = useMemo<ColumnDef<TableRow>[]>(
     () => [
-    
       {
         accessorKey: 'nome',
         header: ({ column }) => <DataGridColumnHeader title="Conta de Anúncio" column={column} />,
@@ -91,7 +98,7 @@ const TableActive = () => {
   };
 
   return (
-    <DataGrid
+    <DataGrid<TableRow>
       columns={columns}
       data={data}
       rowSelection={true}
