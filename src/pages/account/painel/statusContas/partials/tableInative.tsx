@@ -1,36 +1,43 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import {
   DataGrid,
   DataGridColumnHeader,
   DataGridColumnVisibility,
-  DataGridRowSelect,
-  DataGridRowSelectAll,
-  KeenIcon,
   useDataGrid
 } from '@/components';
 import { toast } from 'sonner';
-import { Link, useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { usePanel } from '@/auth/providers/PanelProvider';
+import { useParams } from 'react-router-dom';
+
+// Tipo para cada linha da tabela
+type TableRow = {
+  nome: string;
+  gastoTotal: number;
+  moeda: 'BRL' | 'USD' | string;
+  fusoHorario?: string | null;
+};
 
 const TableInative = () => {
   const { id } = useParams();
-  
-  const data = []
 
-   const columns = useMemo<ColumnDef<any>[]>(
+  // Agora tipado corretamente
+  const data: TableRow[] = [];
+
+  const columns = useMemo<ColumnDef<TableRow>[]>(
     () => [
-    
       {
         accessorKey: 'nome',
-        header: ({ column }) => <DataGridColumnHeader title="Conta de Anúncio" column={column} />,
+        header: ({ column }) => (
+          <DataGridColumnHeader title="Conta de Anúncio" column={column} />
+        ),
         cell: ({ row }) => row.original.nome,
         meta: { headerClassName: 'min-w-[200px] text-center' }
       },
       {
         accessorKey: 'gastoTotal',
-        header: ({ column }) => <DataGridColumnHeader title="Data de Desativação" column={column} />,
+        header: ({ column }) => (
+          <DataGridColumnHeader title="Data de Desativação" column={column} />
+        ),
         cell: ({ row }) =>
           new Intl.NumberFormat('pt-BR', {
             style: 'currency',
@@ -40,7 +47,9 @@ const TableInative = () => {
       },
       {
         accessorKey: 'moeda',
-        header: ({ column }) => <DataGridColumnHeader title="Valor Retido" column={column} />,
+        header: ({ column }) => (
+          <DataGridColumnHeader title="Valor Retido" column={column} />
+        ),
         cell: ({ row }) => {
           const moeda = row.original.moeda;
           if (moeda === 'BRL') return '🟢 BRL';
@@ -51,7 +60,9 @@ const TableInative = () => {
       },
       {
         accessorKey: 'fusoHorario',
-        header: ({ column }) => <DataGridColumnHeader title="Status" column={column} />,
+        header: ({ column }) => (
+          <DataGridColumnHeader title="Status" column={column} />
+        ),
         cell: ({ row }) => row.original.fusoHorario ?? '-',
         meta: { headerClassName: 'min-w-[180px] text-center' }
       }
@@ -87,7 +98,7 @@ const TableInative = () => {
   };
 
   return (
-    <DataGrid
+    <DataGrid<TableRow>
       columns={columns}
       data={data}
       rowSelection={true}
