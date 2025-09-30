@@ -17,7 +17,7 @@ import { usePanel } from '@/auth/providers/PanelProvider';
 const TableActive = () => {
   const { id } = useParams();
   
-  const data = []
+  const data: any = []
 
   const columns = useMemo<ColumnDef<any>[]>(
     () => [
