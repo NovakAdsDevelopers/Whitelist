@@ -144,7 +144,7 @@ const FormCreateIntegracao = ({ onOpenChange }: Props) => {
           <label className="form-label text-gray-900">Last Token</label>
           <label className="input">
             <input
-              placeholder="Digite o last_token (opcional)"
+              placeholder="Digite o last_token"
               autoComplete="off"
               {...formik.getFieldProps('last_token')}
               className={clsx('form-control', {
@@ -159,27 +159,6 @@ const FormCreateIntegracao = ({ onOpenChange }: Props) => {
           )}
         </div>
 
-        {/* Cor */}
-        <div className="flex flex-col gap-1">
-          <label className="form-label text-gray-900 flex items-center justify-between">
-            <span>Cor</span>
-            <span className="font-mono text-xs">{formik.values.cor}</span>
-          </label>
-          <input
-            type="color"
-            value={formik.values.cor || '#000000'}
-            onChange={(e) => formik.setFieldValue('cor', e.target.value)}
-            className={clsx('h-10 w-16 rounded border', {
-              'ring-1 ring-red-500': formik.touched.cor && formik.errors.cor
-            })}
-            onBlur={() => formik.setFieldTouched('cor', true)}
-          />
-          {formik.touched.cor && formik.errors.cor && (
-            <span role="alert" className="text-danger text-xs mt-1">
-              {formik.errors.cor as string}
-            </span>
-          )}
-        </div>
 
         {/* URL da Imagem */}
         <div className="flex flex-col gap-1">
