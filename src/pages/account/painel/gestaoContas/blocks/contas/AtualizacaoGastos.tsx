@@ -18,6 +18,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useClient } from '@/auth/providers/ClientProvider';
 import { ModalRenameAdAccount } from './modal-rename';
 import { FaReceipt } from 'react-icons/fa6';
+import { ModalInsertFunds } from './modal-funds';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;
@@ -45,9 +46,17 @@ const ContasTable = () => {
 
   // ---- estado do modal (props mínimas) ----
   const [openModal, setOpenModal] = useState(false);
-  const [selectedAccountId, setSelectedAccountId] = useState<string>(''); // string p/ casar com o modal
+  const [openModalInsert, setOpenModalInsert] = useState(false);
 
-  // Ouve o evento global disparado pelo modal e faz refetch
+  const [selectedAccountId, setSelectedAccountId] = useState<string>(''); // string p/ casar com o modal
+  type SelectedAccount = { id: string; name: string, BMId: string };
+
+  const [selectedAccount, setSelectedAccount] = useState<SelectedAccount>({
+    id: '',
+    name: '',
+    BMId: ''
+  });
+
   useEffect(() => {
     const onRenamed = () => {
       refetch?.();
@@ -70,7 +79,9 @@ const ContasTable = () => {
         limitGasto: conta.limitGasto,
         saldo: conta.saldo,
         depositoTotal: conta.depositoTotal,
-        ultimaSincronizacao: conta.ultimaSincronizacao
+        ultimaSincronizacao: conta.ultimaSincronizacao,
+        BMId: conta.BMId,
+        BM: conta.BM
       })) || []
     );
   }, [data]);
@@ -88,6 +99,14 @@ const ContasTable = () => {
     setSelectedAccountId(String(id)); // garante string
     setOpenModal(true);
   }, []);
+
+  const openInsertFundsModal = useCallback(
+    (id: string, nome: string, BMId: string) => {
+      setSelectedAccount({ id: String(id), name: String(nome), BMId: String(BMId) }); // garante string
+      setOpenModalInsert(true);
+    },
+    [setSelectedAccount, setOpenModalInsert]
+  );
 
   const columns = useMemo<ColumnDef<IAtualizaçãoContasAnuncioLogData>[]>(
     () => [
@@ -112,6 +131,19 @@ const ContasTable = () => {
         cell: (info) => info.getValue(),
         meta: { headerClassName: 'min-w-[180px]' }
       },
+       {
+        accessorKey: 'bm',
+        accessorFn: (row) => row.BM?.nome || 'N/A',
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            title="BM"
+            filter={<ColumnInputFilter column={column} />}
+            column={column}
+          />
+        ),
+        cell: (info) => info.getValue(),
+        meta: { headerClassName: 'min-w-[180px]' }
+      },
       {
         id: 'actions',
         header: ({ column }) => (
@@ -119,6 +151,11 @@ const ContasTable = () => {
         ),
         cell: ({ row }) => {
           const contaId = row.original.id;
+          const contaName = row.original.nome;
+          const contaBM = row.original.BMId;
+
+
+
           return (
             <div className="flex items-center justify-center gap-2">
               <button
@@ -132,7 +169,10 @@ const ContasTable = () => {
               <button className="bg-gray-800 text-white text-center px-4 py-2 font-semibold rounded-md text-xs">
                 Compartilhar
               </button>
-              <button className="bg-green-500 text-white text-center px-4 py-2 font-semibold rounded-md text-xs">
+              <button
+                className="bg-green-500 text-white text-center px-4 py-2 font-semibold rounded-md text-xs"
+                onClick={() => openInsertFundsModal(contaId, contaName,contaBM)}
+              >
                 Inserir Fundos
               </button>
               <button className="bg-green-500 text-white text-center px-4 py-2 font-semibold rounded-md text-xs">
@@ -194,6 +234,14 @@ const ContasTable = () => {
         open={openModal}
         onClose={() => setOpenModal(false)}
         adAccountId={selectedAccountId}
+      />
+
+      <ModalInsertFunds
+        accountId={selectedAccount.id}
+        name={selectedAccount.name}
+        businessId={selectedAccount.BMId}
+        open={openModalInsert}
+        onClose={() => setOpenModalInsert(false)}
       />
     </>
   );

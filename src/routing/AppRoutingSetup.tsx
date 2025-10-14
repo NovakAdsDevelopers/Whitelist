@@ -103,6 +103,7 @@ import { PainelIntegracoesPage } from '@/pages/account/painel/integracoes';
 import { IntegracaoPage } from '@/pages/account/painel/integracoes/IntegracaoPage';
 import { PainelGestaoContasHistory } from '@/pages/account/painel/gestaoContas/HistoricoGastos/PainelGestaoContasHistory';
 import { AdAccountProvider } from '@/auth/providers/AdAccountProvider';
+import { ContasGastosPage } from '@/pages/account/meta/contas-gastos';
 
 const AppRoutingSetup = (): ReactElement => {
   return (
@@ -115,6 +116,15 @@ const AppRoutingSetup = (): ReactElement => {
             element={
               <ClientProvider>
                 <AtualizacaoGastosPage /> {/* ou outra página inicial que você quiser renderizar */}
+              </ClientProvider>
+            }
+          />
+
+          <Route
+            path="/meta/contas-gastos"
+            element={
+              <ClientProvider>
+                <ContasGastosPage /> {/* ou outra página inicial que você quiser renderizar */}
               </ClientProvider>
             }
           />

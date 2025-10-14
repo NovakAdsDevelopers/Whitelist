@@ -11,23 +11,14 @@ const createClientSchema = Yup.object().shape({
 
   client_id: Yup.string().required('client_id é obrigatório'),
   secret_id: Yup.string().required('secret_id é obrigatório'),
-  last_token: Yup.string().nullable(),
-
-  cor: Yup.string()
-    .matches(/^#([0-9A-Fa-f]{3}){1,2}$/, 'Cor deve ser um HEX válido')
-    .nullable()
-    .default('#000000'),
-
-  img: Yup.string().url('URL da imagem inválida').nullable()
+  last_token: Yup.string().nullable()
 });
 
 const initialValues = {
   title: '',
   client_id: '',
   secret_id: '',
-  last_token: '',
-  cor: '#000000',
-  img: ''
+  last_token: ''
 };
 
 interface Props {
@@ -62,23 +53,6 @@ const FormCreateIntegracao = ({ onOpenChange }: Props) => {
   return (
     <>
       <form className="w-full space-y-4" onSubmit={formik.handleSubmit} noValidate>
-         {/* Preview da imagem */}
-      {formik.values.img?.trim() && (
-        <div className="mt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Preview da imagem</h4>
-          <div className="border rounded-lg p-3 flex items-center justify-center bg-gray-50">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={formik.values.img}
-              alt="Preview"
-              className="max-h-48 object-contain"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
-        </div>
-      )}
         {/* Title */}
         <div className="flex flex-col gap-1">
           <label className="form-label text-gray-900">Título</label>
@@ -159,27 +133,6 @@ const FormCreateIntegracao = ({ onOpenChange }: Props) => {
           )}
         </div>
 
-
-        {/* URL da Imagem */}
-        <div className="flex flex-col gap-1">
-          <label className="form-label text-gray-900">URL da Imagem</label>
-          <label className="input">
-            <input
-              placeholder="https://exemplo.com/sua-imagem.png"
-              autoComplete="off"
-              {...formik.getFieldProps('img')}
-              className={clsx('form-control', {
-                'is-invalid': formik.touched.img && formik.errors.img
-              })}
-            />
-          </label>
-          {formik.touched.img && formik.errors.img && (
-            <span role="alert" className="text-danger text-xs mt-1">
-              {formik.errors.img as string}
-            </span>
-          )}
-        </div>
-
         {/* Botão */}
         <div className="w-full flex justify-end">
           <button
@@ -191,8 +144,6 @@ const FormCreateIntegracao = ({ onOpenChange }: Props) => {
           </button>
         </div>
       </form>
-
-     
     </>
   );
 };

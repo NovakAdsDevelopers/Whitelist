@@ -28,7 +28,7 @@ const styles: StylesConfig<Option, true> = {
 
 export default function BMSelectorRS({
   className,
-  placeholder = 'Selecione as BMs',
+  placeholder = 'Seleciones as as BMs',
 }: {
   className?: string;
   placeholder?: string;

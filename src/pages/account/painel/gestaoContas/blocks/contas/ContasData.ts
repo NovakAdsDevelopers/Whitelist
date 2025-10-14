@@ -11,4 +11,9 @@ export interface IAtualizaçãoContasAnuncioLogData {
   saldoMeta: string;
   limitGasto: string;
   ultimaSincronizacao: string;
+  BMId: string;
+  BM: {
+    nome: string;
+    BMId: string;
+  };
 }

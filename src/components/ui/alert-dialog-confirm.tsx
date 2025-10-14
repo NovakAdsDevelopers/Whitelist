@@ -88,8 +88,8 @@ export const ConfirmDialog = ({
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="border-b-2 pb-2 mb-2">{title}</AlertDialogTitle>
-          {description && <AlertDialogDescription className='text-md'>{description}</AlertDialogDescription>}
+          <AlertDialogTitle className="border-b-2 pb-2 mb-2 text-center">{title}</AlertDialogTitle>
+          {description && <AlertDialogDescription className='text-md text-center'>{description}</AlertDialogDescription>}
         </AlertDialogHeader>
 
         {/* Progress bar */}

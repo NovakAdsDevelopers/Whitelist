@@ -23,6 +23,38 @@ export const GET_CONTA_ANUNCIO = gql`
         saldoMeta
         saldo
         depositoTotal
+        BMId
+        BM {
+          nome
+          BMId
+        }
+      }
+    }
+  }
+`;
+
+export const GET_CONTAS_ANUNCIOS_CREDITO = gql`
+  query GetAllContasAnuncioSpends($pagination: Pagination) {
+    GetAllContasAnuncioSpends(pagination: $pagination) {
+      result {
+        id
+        nome
+        status
+        moeda
+        fusoHorario
+        gastoDiario
+        limiteGasto
+        saldoMeta
+        saldo
+        depositoTotal
+        ultimaSincronizacao
+      }
+      pageInfo {
+        currentPage
+        totalPages
+        totalItems
+        hasNextPage
+        hasPreviousPage
       }
     }
   }
@@ -57,19 +89,19 @@ export const GET_ALL_CONTA_ANUNCIO = gql`
 `;
 
 export const GET_INSIGHT_AD_ACCOUNT = gql`
-query GetInsightsAdAccount($adAccountId: String, $startDate: String!, $endDate: String) {
-  GetInsightsAdAccount(adAccountId: $adAccountId, startDate: $startDate, endDate: $endDate) {
-    adAccountId
-    periodoUTC {
-      lt
-      gte
+  query GetInsightsAdAccount($adAccountId: String, $startDate: String!, $endDate: String) {
+    GetInsightsAdAccount(adAccountId: $adAccountId, startDate: $startDate, endDate: $endDate) {
+      adAccountId
+      periodoUTC {
+        lt
+        gte
+      }
+      diasNoPeriodo
+      saldoMeta
+      gastoTotal
+      mediaDiaria
+      saldoTotal
+      nome
     }
-    diasNoPeriodo
-    saldoMeta
-    gastoTotal
-    mediaDiaria
-    saldoTotal
-    nome
   }
-}
-`
+`;

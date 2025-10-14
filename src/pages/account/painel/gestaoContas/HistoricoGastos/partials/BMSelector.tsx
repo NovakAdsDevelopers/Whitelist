@@ -28,19 +28,21 @@ const styles: StylesConfig<Option, true> = {
 
 export default function BMSelectorRS({
   className,
-  placeholder = 'Selecione as BMs',
+  placeholder = 'Seleciones as BMs',
 }: {
   className?: string;
   placeholder?: string;
 }) {
   const { data, loading } = useQueryBMs();
   const { BMs, setBMs } = usePanel();
-  console.log('BMs selecionadas:', BMs);
-  // Valor padrão: quando vazio, considera "todas"
-  React.useEffect(() => {
-    if (!BMs || BMs.length === 0) setBMs(['BMs']);
-  }, [BMs, setBMs]);
 
+  // Todos os IDs das BMs retornadas (como string)
+  const allIds = React.useMemo<string[]>(
+    () => (data?.GetBMs ?? []).map((bm: any) => String(bm.BMId)),
+    [data]
+  );
+
+  // Opções do select (inclui atalho "Todas as BMs")
   const options = React.useMemo<Option[]>(
     () => [
       { value: 'BMs', label: 'Todas as BMs' },
@@ -52,47 +54,53 @@ export default function BMSelectorRS({
     [data]
   );
 
-  // Valor controlado do select
-  const value = React.useMemo<Option[]>(
-    () => {
-      const current = (BMs && BMs.length > 0 ? BMs : ['BMs']).map(String);
-      return options.filter((o) => current.includes(o.value));
-    },
-    [BMs, options]
-  );
+  // Valor padrão: quando não há nada selecionado, selecionar TODAS as BMs
+  React.useEffect(() => {
+    if ((!BMs || BMs.length === 0) && allIds.length > 0) {
+      setBMs(allIds);
+    }
+  }, [BMs, allIds, setBMs]);
+
+  // Valor controlado do select: se vazio, mostra todas
+  const value = React.useMemo<Option[]>(() => {
+    const current = (BMs && BMs.length > 0 ? BMs : allIds).map(String);
+    return options.filter((o) => current.includes(o.value));
+  }, [BMs, allIds, options]);
 
   const handleChange = (next: MultiValue<Option>, meta: ActionMeta<Option>) => {
     const vals = next.map((o) => o.value);
 
-    // Se limpou tudo -> volta para "Todas"
+    // Se limpou tudo -> volta para TODAS as BMs
     if (vals.length === 0) {
-      setBMs(['BMs']);
+      setBMs(allIds);
       return;
     }
 
     if (meta.action === 'select-option' && meta.option) {
-      // Se escolheu "Todas", fica só ela
+      // Se escolheu "Todas as BMs", seleciona todas as IDs
       if (meta.option.value === 'BMs') {
-        setBMs(['BMs']);
+        setBMs(allIds);
         return;
       }
-      // Se escolheu específica e tinha "Todas", remove "Todas"
+      // Caso contrário, mantém as selecionadas (sem "BMs")
       setBMs(vals.filter((v) => v !== 'BMs'));
       return;
     }
 
     // Remoções / clears
-    if (meta.action === 'remove-value' || meta.action === 'pop-value' || meta.action === 'clear') {
-      if (vals.includes('BMs')) {
-        setBMs(['BMs']);
-        return;
-      }
-      setBMs(vals.length ? vals : ['BMs']);
+    if (
+      meta.action === 'remove-value' ||
+      meta.action === 'pop-value' ||
+      meta.action === 'clear'
+    ) {
+      // Se após remoção ficar vazio, volta para TODAS
+      setBMs(vals.length ? vals.filter((v) => v !== 'BMs') : allIds);
       return;
     }
 
     // Fallback geral
-    setBMs(vals.includes('BMs') && vals.length > 1 ? ['BMs'] : vals);
+    const cleaned = vals.filter((v) => v !== 'BMs');
+    setBMs(cleaned.length ? cleaned : allIds);
   };
 
   return (

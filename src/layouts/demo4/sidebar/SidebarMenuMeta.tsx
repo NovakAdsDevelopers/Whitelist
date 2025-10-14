@@ -48,6 +48,11 @@ const SidebarMenuMeta = () => {
           title: 'Atualização de Gastos',
           path: '/meta/gastos',
           active: false
+        },
+         {
+          title: 'Contas de crédito',
+          path: '/meta/contas-gastos',
+          active: false
         }
       ]
     }

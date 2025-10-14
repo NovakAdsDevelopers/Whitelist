@@ -8,8 +8,10 @@ import { TypesGetIntegracoes } from '@/graphql/types/Integracao';
 import { FaMeta } from 'react-icons/fa6';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { metaApi } from '@/services/connection';
+import { toast } from 'sonner';
 
-// Util para mascarar valores sensíveis mantendo um pequeno contexto visual
+// --- Util para mascarar valores sensíveis ---
 const mask = (value?: string | null, opts: { show?: boolean; keep?: number } = {}) => {
   const { show = false, keep = 0 } = opts;
   if (!value) return '-';
@@ -21,15 +23,12 @@ const mask = (value?: string | null, opts: { show?: boolean; keep?: number } = {
   return `${head}${dots}${tail}`;
 };
 
-const noop = () => {};
-
 // --- Util de cópia ---
 async function copyToClipboard(text?: string | null) {
   if (!text || text === '-') return;
   try {
     await navigator.clipboard.writeText(text);
-  } catch (err) {
-    // Fallback simples
+  } catch {
     const ta = document.createElement('textarea');
     ta.value = text;
     document.body.appendChild(ta);
@@ -39,16 +38,16 @@ async function copyToClipboard(text?: string | null) {
   }
 }
 
-// Componente utilitário para qualquer área "copiável" com tooltip de Copiar/Copiado
+// --- Componente Copyable ---
 function Copyable({
   id,
   copyValue,
   children,
   className
 }: {
-  id: string; // chave única (ex: `${id}-token`)
-  copyValue?: string | null; // valor completo a ser copiado
-  children: React.ReactNode; // conteúdo visível (pode estar mascarado)
+  id: string;
+  copyValue?: string | null;
+  children: React.ReactNode;
   className?: string;
 }) {
   const [copied, setCopied] = useState(false);
@@ -56,7 +55,6 @@ function Copyable({
   const doCopy = async () => {
     await copyToClipboard(copyValue);
     setCopied(true);
-    // tempo para voltar ao estado "Copiar"
     window.setTimeout(() => setCopied(false), 1500);
   };
 
@@ -101,19 +99,18 @@ const CardsIntegracao = ({
 }) => {
   const [show, setShow] = useState(false);
 
-  // visibilidade/máscara por card
+  // estado de loading por card
+  const [syncingById, setSyncingById] = useState<Record<string, boolean>>({});
+
   const [visible, setVisible] = useState<Record<string, boolean>>({});
   const toggleVisible = (id: string) => setVisible((v) => ({ ...v, [id]: !v[id] }));
 
-  // switch ON/OFF (visual local)
   const [enabled, setEnabled] = useState<Record<string, boolean>>({});
   const toggleEnabled = (id: string) => setEnabled((e) => ({ ...e, [id]: !e[id] }));
 
-  // expand/collapse credenciais
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const toggleExpanded = (id: string) => setExpanded((ex) => ({ ...ex, [id]: !ex[id] }));
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const toggleExpanded = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
-  // ⬇️ NOVO: filtro da listagem
   const [tab, setTab] = useState<'ALL' | 'CONNECTED' | 'DISCONNECTED'>('ALL');
 
   const connected = useMemo(
@@ -148,38 +145,48 @@ const CardsIntegracao = ({
     }
   };
 
+  // --- Sincronização individual por integração ---
+  async function associateAdAccountsToBMs(id: number) {
+    setSyncingById((prev) => ({ ...prev, [id]: true }));
+    try {
+      const res = await metaApi.post(`/bms/associate-adaccounts/${id}`);
+      if (res.status === 200) {
+        toast.success(res.data.message || 'Sincronização com o Meta concluída!');
+      } else {
+        toast.error(res.data.error || 'Erro durante a sincronização com o Meta.');
+      }
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error ||
+          'Erro inesperado ao tentar sincronizar com o Meta.'
+      );
+    } finally {
+      setSyncingById((prev) => ({ ...prev, [id]: false }));
+    }
+  }
+
   return (
     <TooltipProvider delayDuration={150} skipDelayDuration={200}>
       <div className="w-full flex-col">
+        {/* Filtros e botões */}
         <div className="w-full flex flex-row justify-between items-center mb-4">
-          {/* ⬇️ Abas de filtro com contadores */}
           <div className="bg-gray-200 dark:bg-gray-700/70 px-1 py-1 rounded-lg text-sm font-medium flex gap-2">
-            <button
-              onClick={() => setTab('ALL')}
-              className={`px-4 py-3 rounded-lg cursor-pointer transition
-                ${tab === 'ALL' ? 'bg-white' : 'bg-gray-200 hover:bg-white'}`}
-            >
-              Todas Aplicações ({totalAll})
-            </button>
-
-            <button
-              onClick={() => setTab('CONNECTED')}
-              className={`px-4 py-3 rounded-lg cursor-pointer transition
-                ${tab === 'CONNECTED' ? 'bg-white' : 'bg-gray-200 hover:bg-white'}`}
-            >
-              Conectados ({totalConnected})
-            </button>
-
-            <button
-              onClick={() => setTab('DISCONNECTED')}
-              className={`px-4 py-3 rounded-lg cursor-pointer transition
-                ${tab === 'DISCONNECTED' ? 'bg-white' : 'bg-gray-200 hover:bg-white'}`}
-            >
-              Desconectados ({totalDisconnected})
-            </button>
+            {[
+              { label: 'Todas Aplicações', tab: 'ALL', count: totalAll },
+              { label: 'Conectados', tab: 'CONNECTED', count: totalConnected },
+              { label: 'Desconectados', tab: 'DISCONNECTED', count: totalDisconnected }
+            ].map(({ label, tab: t, count }) => (
+              <button
+                key={t}
+                onClick={() => setTab(t as any)}
+                className={`px-4 py-3 rounded-lg transition ${
+                  tab === t ? 'bg-white' : 'bg-gray-200 hover:bg-white'
+                }`}
+              >
+                {label} ({count})
+              </button>
+            ))}
           </div>
-
-       
 
           <div className="flex items-center justify-end gap-2">
             <Button variant="light" size="sm" onClick={handleSyncAll} disabled={syncingAll}>
@@ -200,13 +207,13 @@ const CardsIntegracao = ({
           </div>
         </div>
 
-        {/* Grid responsivo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
           {list.map((integracao: any) => {
             const id = String(integracao.id);
             const isVisible = !!visible[id];
-            const isEnabled = !!enabled[id];
-            const isExpanded = !!expanded[id];
+            const isExpanded = expandedId === id;
+            const syncing = syncingById[id];
 
             const { title, cor, token, client_id, secret_id, descricao } = integracao;
             const shortDesc = descricao ?? 'Integração do Business Manager do Facebook conectada.';
@@ -226,15 +233,16 @@ const CardsIntegracao = ({
                         <CardTitle className="text-base leading-tight">
                           {title || 'Sem título'}
                         </CardTitle>
-                        <span className="text-xs text-gray-600 dark:text-gray-300">{shortDesc}</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-300">
+                          {shortDesc}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2" />
                   </div>
                 </CardHeader>
 
                 <CardContent className="pt-0">
-                  <div className="w-full flex flex-row justify-between items-center pt-3">
+                  <div className="w-full flex justify-between items-center pt-3">
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
@@ -258,14 +266,12 @@ const CardsIntegracao = ({
                         size="sm"
                         onClick={() => handleRemove(id, title)}
                         title="Remover integração"
-                        aria-label="Remover integração"
                       >
                         <Trash2 className="h-4 w-4" />
                         <span>Excluir</span>
                       </Button>
                     </div>
 
-                    {/* Usa situacao para estado conectado/desconectado */}
                     <Switch
                       checked={integracao.situacao === 'ATIVO'}
                       onCheckedChange={() => toggleEnabled(id)}
@@ -273,42 +279,51 @@ const CardsIntegracao = ({
                   </div>
 
                   {isExpanded && (
-                    <div>
-                      <div className="mt-3 space-y-2 rounded-xl py-3 px-2 bg-gray-200/70 dark:bg-gray-700/70">
-                        <div className="flex justify-between gap-2 text-sm items-center">
-                          <span className="font-medium text-gray-700 dark:text-gray-200">Token:</span>
-                          <Copyable id={`${id}-token`} copyValue={token} className="font-mono bg-gray-100 px-2 py-1 rounded-lg">
-                            <span className="truncate">{mask(token, { show: isVisible, keep: 3 })}</span>
+                    <div className="mt-3 space-y-2 rounded-xl py-3 px-2 bg-gray-200/70 dark:bg-gray-700/70">
+                      {[
+                        { label: 'Token', value: token, idSuffix: 'token', keep: 3 },
+                        { label: 'Client ID', value: client_id, idSuffix: 'client', keep: 3 },
+                        { label: 'Secret ID', value: secret_id, idSuffix: 'secret', keep: 2 }
+                      ].map(({ label, value, idSuffix, keep }) => (
+                        <div key={idSuffix} className="flex justify-between gap-2 text-sm items-center">
+                          <span className="font-medium text-gray-700 dark:text-gray-200">{label}:</span>
+                          <Copyable
+                            id={`${id}-${idSuffix}`}
+                            copyValue={value}
+                            className="font-mono bg-gray-100 px-2 py-1 rounded-lg"
+                          >
+                            <span className="truncate">{mask(value, { show: isVisible, keep })}</span>
                           </Copyable>
                         </div>
-                        <div className="flex justify-between gap-2 text-sm items-center">
-                          <span className="font-medium text-gray-700 dark:text-gray-200">Client ID:</span>
-                          <Copyable id={`${id}-client`} copyValue={client_id} className="font-mono bg-gray-100 px-2 py-1 rounded-lg">
-                            <span className="truncate">{mask(client_id, { show: isVisible, keep: 3 })}</span>
-                          </Copyable>
-                        </div>
-                        <div className="flex justify-between gap-2 text-sm items-center">
-                          <span className="font-medium text-gray-700 dark:text-gray-200">Secret ID:</span>
-                          <Copyable id={`${id}-secret`} copyValue={secret_id} className="font-mono bg-gray-100 px-2 py-1 rounded-lg">
-                            <span className="truncate">{mask(secret_id, { show: isVisible, keep: 2 })}</span>
-                          </Copyable>
-                        </div>
+                      ))}
 
-                        <div className="flex justify-between items-center mt-2">
-                          <span className="text-sm underline">
-                            {integracao.totalAdAccounts} contas de anúncios
-                          </span>
+                      <div className="flex justify-between items-center mt-4 border-t-2 pt-6">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            size="default"
+                            className="rounded-md"
+                            title="Associar contas"
+                            onClick={() => associateAdAccountsToBMs(Number(id))}
+                            disabled={syncing}
+                          >
+                            {syncing ? (
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              'Associar contas'
+                            )}
+                          </Button>
+
                           <Button
                             variant="outline"
                             size="icon"
                             className="rounded-md"
                             onClick={() => toggleVisible(id)}
-                            aria-label={isVisible ? 'Ocultar informações sensíveis' : 'Revelar informações sensíveis'}
                             title={isVisible ? 'Ocultar' : 'Revelar'}
                           >
                             {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>
                         </div>
+                        <span className="text-sm underline">{integracao.totalAdAccounts} ativos</span>
                       </div>
                     </div>
                   )}

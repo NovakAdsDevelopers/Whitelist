@@ -38,8 +38,6 @@ export type VariablesSetIntegracao = {
     client_id: string;
     secret_id: string;
     last_token: string;
-    cor: string | null;
-    img: string | null;
     title: string;
   };
 };
