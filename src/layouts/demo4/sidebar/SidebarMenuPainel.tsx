@@ -52,6 +52,10 @@ const SidebarMenuPainel = () => {
         {
           title: 'Resumo de Contas',
           path: '/painel/resumo-contas'
+        },
+        {
+          title: 'Extrato Financeiro',
+          path: '/painel/extrato-financeiro'
         }
       ]
     }

@@ -104,6 +104,8 @@ import { IntegracaoPage } from '@/pages/account/painel/integracoes/IntegracaoPag
 import { PainelGestaoContasHistory } from '@/pages/account/painel/gestaoContas/HistoricoGastos/PainelGestaoContasHistory';
 import { AdAccountProvider } from '@/auth/providers/AdAccountProvider';
 import { ContasGastosPage } from '@/pages/account/meta/contas-gastos';
+import { PainelGestaoContasHistoryFunds } from '@/pages/account/painel/gestaoContas/HistoricoFundos/PainelGestaoContasHistory';
+import { PainelExtratoFinanceiroPage } from '@/pages/account/painel/extrato-financeiro';
 
 const AppRoutingSetup = (): ReactElement => {
   return (
@@ -273,11 +275,22 @@ const AppRoutingSetup = (): ReactElement => {
 
                   <Route path="status-contas" element={<PainelStatusContasPage />} />
                   <Route path="gestao-contas" element={<PainelGestaoContasPage />} />
+                  <Route path="extrato-financeiro" element={<PainelExtratoFinanceiroPage />} />
+
                   <Route
                     path="gestao-contas/:id/history"
                     element={
                       <AdAccountProvider>
                         <PainelGestaoContasHistory />
+                      </AdAccountProvider>
+                    }
+                  />
+
+                  <Route
+                    path="gestao-contas/:id/funds"
+                    element={
+                      <AdAccountProvider>
+                        <PainelGestaoContasHistoryFunds />
                       </AdAccountProvider>
                     }
                   />

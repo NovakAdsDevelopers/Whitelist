@@ -12,8 +12,6 @@ export interface TypesGetIntegracoes {
       client_id: string;
       secret_id: string;
       id: string;
-      cor: string | null;
-      img: string | null;
       title: string;
       situacao: string;
       totalAdAccounts: number;

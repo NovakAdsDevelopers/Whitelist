@@ -16,11 +16,11 @@ const ModalCreateIntegracao = ({ open, onOpenChange }: IModalCreateIntegracaoPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[450px]">
-        <DialogHeader className="border-0">
+        <DialogHeader className="border">
           <DialogTitle>Nova Integração</DialogTitle>
         </DialogHeader>
 
-        <DialogBody className="flex flex-col items-center pt-10 pb-10">
+        <DialogBody className="flex flex-col items-center pt-5 pb-10">
           <FormCreateIntegracao onOpenChange={onOpenChange} />
         </DialogBody>
       </DialogContent>

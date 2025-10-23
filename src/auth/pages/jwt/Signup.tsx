@@ -10,6 +10,7 @@ import { Alert, KeenIcon } from '@/components';
 import { useLayout } from '@/providers';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { TermsModal } from './terms-modal';
 
 const initialValues = {
   nome: '',
@@ -43,6 +44,9 @@ const Signup = () => {
   const from = location.state?.from?.pathname || '/';
   const [showPassword, setShowPassword] = useState(false);
   const { currentLayout } = useLayout();
+
+  const [showTerms, setShowTerms] = useState(false);
+  const [termsViewed, setTermsViewed] = useState(false);
 
   const formik = useFormik({
     initialValues,
@@ -110,13 +114,22 @@ const Signup = () => {
 
         <div className="grid grid-cols-2 gap-2.5">
           <a href="#" className="btn btn-light btn-sm justify-center disabled">
-            <img src={toAbsoluteUrl('/media/brand-logos/google.svg')} className="size-3.5 shrink-0" />
+            <img
+              src={toAbsoluteUrl('/media/brand-logos/google.svg')}
+              className="size-3.5 shrink-0"
+            />
             Use Google
           </a>
 
           <a href="#" className="btn btn-light btn-sm justify-center disabled">
-            <img src={toAbsoluteUrl('/media/brand-logos/apple-black.svg')} className="size-3.5 shrink-0 dark:hidden" />
-            <img src={toAbsoluteUrl('/media/brand-logos/apple-white.svg')} className="size-3.5 shrink-0 light:hidden" />
+            <img
+              src={toAbsoluteUrl('/media/brand-logos/apple-black.svg')}
+              className="size-3.5 shrink-0 dark:hidden"
+            />
+            <img
+              src={toAbsoluteUrl('/media/brand-logos/apple-white.svg')}
+              className="size-3.5 shrink-0 light:hidden"
+            />
             Use Apple
           </a>
         </div>
@@ -144,7 +157,9 @@ const Signup = () => {
             />
           </label>
           {formik.touched.nome && formik.errors.nome && (
-            <span role="alert" className="text-danger text-xs mt-1">{formik.errors.nome}</span>
+            <span role="alert" className="text-danger text-xs mt-1">
+              {formik.errors.nome}
+            </span>
           )}
         </div>
 
@@ -163,7 +178,9 @@ const Signup = () => {
             />
           </label>
           {formik.touched.email && formik.errors.email && (
-            <span role="alert" className="text-danger text-xs mt-1">{formik.errors.email}</span>
+            <span role="alert" className="text-danger text-xs mt-1">
+              {formik.errors.email}
+            </span>
           )}
         </div>
 
@@ -182,11 +199,16 @@ const Signup = () => {
             />
             <button className="btn btn-icon" onClick={togglePassword}>
               <KeenIcon icon="eye" className={clsx('text-gray-500', { hidden: showPassword })} />
-              <KeenIcon icon="eye-slash" className={clsx('text-gray-500', { hidden: !showPassword })} />
+              <KeenIcon
+                icon="eye-slash"
+                className={clsx('text-gray-500', { hidden: !showPassword })}
+              />
             </button>
           </label>
           {formik.touched.password && formik.errors.password && (
-            <span role="alert" className="text-danger text-xs mt-1">{formik.errors.password}</span>
+            <span role="alert" className="text-danger text-xs mt-1">
+              {formik.errors.password}
+            </span>
           )}
         </div>
 
@@ -194,13 +216,24 @@ const Signup = () => {
           <input
             className="checkbox checkbox-sm"
             type="checkbox"
-            {...formik.getFieldProps('acceptTerms')}
+            checked={formik.values.acceptTerms}
+            onChange={() => {
+              if (!termsViewed) {
+                setShowTerms(true);
+              } else {
+                formik.setFieldValue('acceptTerms', !formik.values.acceptTerms);
+              }
+            }}
           />
           <span className="checkbox-label">
             Eu aceito{' '}
-            <Link to="#" className="text-2sm link">
+            <button
+              type="button"
+              onClick={() => setShowTerms(true)}
+              className="text-2sm link underline"
+            >
               Termos & Condições
-            </Link>
+            </button>
           </span>
         </label>
 
@@ -213,11 +246,22 @@ const Signup = () => {
         <button
           type="submit"
           className="btn btn-primary flex justify-center grow"
-          disabled={loading || formik.isSubmitting || !formik.values.acceptTerms}
+          disabled={loading || formik.isSubmitting || !formik.values.acceptTerms || !termsViewed}
         >
           {loading ? 'Por favor, aguarde...' : 'Cadastrar-se'}
         </button>
       </motion.form>
+      {showTerms && (
+        <TermsModal
+          pdfUrl={toAbsoluteUrl('/media/docs/termos.pdf')}
+          onClose={() => setShowTerms(false)}
+          onAccept={() => {
+            setShowTerms(false);
+            setTermsViewed(true);
+            formik.setFieldValue('acceptTerms', true);
+          }}
+        />
+      )}
     </motion.div>
   );
 };

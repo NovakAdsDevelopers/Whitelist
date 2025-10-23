@@ -17,7 +17,7 @@ import { useGetContasAnuncio } from '@/graphql/services/ContasAnuncio';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useClient } from '@/auth/providers/ClientProvider';
 import { ModalRenameAdAccount } from './modal-rename';
-import { FaReceipt } from 'react-icons/fa6';
+import { FaPix, FaReceipt } from 'react-icons/fa6';
 import { ModalInsertFunds } from './modal-funds';
 
 interface IColumnFilterProps<TData, TValue> {
@@ -49,7 +49,7 @@ const ContasTable = () => {
   const [openModalInsert, setOpenModalInsert] = useState(false);
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>(''); // string p/ casar com o modal
-  type SelectedAccount = { id: string; name: string, BMId: string };
+  type SelectedAccount = { id: string; name: string; BMId: string };
 
   const [selectedAccount, setSelectedAccount] = useState<SelectedAccount>({
     id: '',
@@ -131,7 +131,7 @@ const ContasTable = () => {
         cell: (info) => info.getValue(),
         meta: { headerClassName: 'min-w-[180px]' }
       },
-       {
+      {
         accessorKey: 'bm',
         accessorFn: (row) => row.BM?.nome || 'N/A',
         header: ({ column }) => (
@@ -154,8 +154,6 @@ const ContasTable = () => {
           const contaName = row.original.nome;
           const contaBM = row.original.BMId;
 
-
-
           return (
             <div className="flex items-center justify-center gap-2">
               <button
@@ -171,13 +169,19 @@ const ContasTable = () => {
               </button>
               <button
                 className="bg-green-500 text-white text-center px-4 py-2 font-semibold rounded-md text-xs"
-                onClick={() => openInsertFundsModal(contaId, contaName,contaBM)}
+                onClick={() => openInsertFundsModal(contaId, contaName, contaBM)}
               >
                 Inserir Fundos
               </button>
-              <button className="bg-green-500 text-white text-center px-4 py-2 font-semibold rounded-md text-xs">
+
+              <Link
+                to={`/painel/gestao-contas/${contaId}/funds`}
+                className="bg-green-500 text-white text-center px-4 py-2 font-semibold rounded-md text-xs flex justify-center items-center gap-1"
+              >
+                <FaPix />
                 Historicos de Fundos
-              </button>
+              </Link>
+
               <Link
                 to={`/painel/gestao-contas/${contaId}/history`}
                 className="bg-green-500 text-white text-center px-4 py-2 font-semibold rounded-md text-xs flex justify-center items-center gap-1"

@@ -8,8 +8,6 @@ export const GET_INTEGRACOES = gql`
         client_id
         title
         secret_id
-        cor
-        img
         id
         situacao
         totalAdAccounts
