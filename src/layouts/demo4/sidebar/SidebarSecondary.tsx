@@ -11,7 +11,7 @@ import { useAuthContext } from '@/auth';
 const SidebarSecondary = () => {
   const { pathname } = useLocation();
   const { currentUser } = useAuthContext();
-
+  const isAdmin = currentUser?.tipo === 'ADMIN';
   const [viewportHeight] = useViewport();
   const offset = 0;
   const [scrollableHeight, setScrollableHeight] = useState<number>(0);
@@ -29,21 +29,12 @@ const SidebarSecondary = () => {
           ...(scrollableHeight > 0 && { height: `${scrollableHeight}px` })
         }}
       >
-        {pathname === '/' ? (
-          <SidebarMenuMeta />
-        ) : pathname.startsWith('/meta/') ? (
-          <SidebarMenuMeta />
-        ) : pathname === '/dashboard' ? (
-          <SidebarMenuDashboard />
-        ) : pathname === '/painel' || pathname.startsWith('/painel/') ? (
-          <SidebarMenuPainel />
-        ) : pathname === '/backoffice' ||
-          pathname.startsWith('/backoffice/') ||
-          currentUser?.tipo === 'ADMIN' ? (
-          <SidebarMenuBackoffice />
-        ) : (
-          <SidebarMenuDefault />
-        )}
+        {pathname === '/' ? ( <SidebarMenuMeta /> ) : 
+        pathname.startsWith('/meta/') ? (<SidebarMenuMeta /> ) :
+         pathname === '/dashboard' ? (<SidebarMenuDashboard />) : 
+         pathname === '/painel' || pathname.startsWith('/painel/') || currentUser?.tipo === 'ADMIN' ? ( <SidebarMenuPainel /> ) : 
+         pathname === '/backoffice' || pathname.startsWith('/backoffice/') || currentUser?.tipo === 'ADMIN' ? ( <SidebarMenuBackoffice /> ) : 
+         (<SidebarMenuDefault /> )}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { Container, KeenIcon } from '@/components';
 import { FilterPeriod } from './partials/FilterPeriod';
 import { EarningsChart } from './partials/EarningChart';
 import { PieChart } from './partials/PieChart';
-import { TableRanking } from './partials/table/TableLog';
+import { TableSpendDaily } from './partials/table/TableLog';
 import { PanelProvider, usePanel } from '@/auth/providers/PanelProvider';
 import {
   Select,
@@ -56,24 +56,26 @@ const DashoboardMetaContent = () => {
 
       <div className="grid grid-cols-12 gap-4 mt-4 auto-rows-auto">
         <Card
-          className="col-span-4"
+          className="col-span-6"
           title="Gasto Total"
           value={formatBRL(gastoTotal)}
           icon={<KeenIcon icon="dollar" className="text-primary" />}
-          subtitle={`2 contas em atividade`}
+          subtitle={`Refere-se ao período selecionado`}
         />
-        <Card
-          className="col-span-4"
+        {/* <Card
+          className="col-span-6"
           title="Saldo Total"
           value={formatBRL(saldo)}
           icon={<KeenIcon icon="dollar" className="text-primary" />}
           subtitle={`VERIFICAR inseridos no período`}
-        />
+        /> */}
 
         <Card
-          className="col-span-4"
+          className="col-span-6"
           title="Saldo no Meta"
           icon={<KeenIcon icon="bar-chart" className="text-primary" />}
+          subtitle={`Refere-se ao período selecionado`}
+
         >
           <div>
             <div className="w-full text-left">
@@ -90,7 +92,7 @@ const DashoboardMetaContent = () => {
       </div>
 
       <div className="mt-4">
-        <TableRanking />
+        <TableSpendDaily />
       </div>
     </>
   );

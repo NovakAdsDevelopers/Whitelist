@@ -12,9 +12,13 @@ import {
 import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
 import { useGetContaAnuncioPix } from '@/graphql/services/ContaAnuncioPix';
+import { Button } from '@/components/ui/button';
+import { FaPix } from 'react-icons/fa6';
 
 // 🧱 Novo componente: Modal simples
 const PixDetailsModal = ({ pix, onClose }: { pix: any; onClose: () => void }) => {
+  const [isApproving, setIsApproving] = useState(false);
+
   if (!pix) return null;
 
   const copyCode = async () => {
@@ -22,21 +26,49 @@ const PixDetailsModal = ({ pix, onClose }: { pix: any; onClose: () => void }) =>
     toast.success('Código PIX copiado!');
   };
 
+  const handleApprovePix = async () => {
+    try {
+      setIsApproving(true);
+      // 🔧 Simulação da requisição (substitua pela mutation real)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      toast.success('Solicitação de aprovação enviada com sucesso!');
+    } catch (err) {
+      toast.error('Erro ao solicitar aprovação.');
+    } finally {
+      setIsApproving(false);
+    }
+  };
+
+  // Fecha se clicar fora, mas só se não estiver em requisição
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isApproving) return;
+    if (e.target === e.currentTarget) onClose();
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md p-6 relative">
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      onClick={handleOverlayClick}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-md p-6 relative animate-fade-in">
+        {/* X de Fechar */}
         <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+          onClick={() => !isApproving && onClose()}
+          disabled={isApproving}
+          className={`absolute top-3 right-3 text-gray-500 hover:text-gray-800 transition ${
+            isApproving ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
           <KeenIcon icon="close" />
         </button>
 
+        {/* Título */}
         <h2 className="text-lg font-semibold text-center mb-4 flex items-center justify-center gap-2">
           <KeenIcon icon="money" style="duotone" className="text-primary-600" />
           Detalhes do PIX
         </h2>
 
+        {/* Conteúdo */}
         <div className="flex flex-col items-center gap-4">
           <img
             src={pix.imageUrl}
@@ -54,15 +86,35 @@ const PixDetailsModal = ({ pix, onClose }: { pix: any; onClose: () => void }) =>
               <KeenIcon icon="copy" />
             </button>
           </div>
-        </div>
 
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={onClose}
-            className="btn btn-light border border-gray-200 hover:bg-gray-100"
-          >
-            Fechar
-          </button>
+          {/* Ações */}
+          <div className="flex flex-col w-full gap-2">
+            <Button
+              className="w-full"
+              variant="secondary"
+              onClick={copyCode}
+              disabled={isApproving}
+            >
+              <KeenIcon icon="copy" />
+              Copiar Código PIX
+            </Button>
+            <Button
+              className="w-full"
+              variant="default"
+              onClick={handleApprovePix}
+              disabled={isApproving}
+            >
+              {isApproving ? (
+                <>
+                  <KeenIcon icon="spinner" className="animate-spin" /> Enviando...
+                </>
+              ) : (
+                <>
+                  <FaPix /> Solicitar Aprovação
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -92,7 +144,7 @@ const TableHistoryMetaPix = () => {
         enableHiding: false,
         meta: { headerClassName: 'w-0 text-center' }
       },
-{
+      {
         accessorKey: 'accountName',
         header: ({ column }) => <DataGridColumnHeader title="Conta" column={column} />,
         cell: ({ row }) => (

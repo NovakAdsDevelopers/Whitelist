@@ -6,17 +6,48 @@ import {
   DataGridColumnVisibility,
   DataGridRowSelect,
   DataGridRowSelectAll,
-  KeenIcon,
   useDataGrid
 } from '@/components';
 import { toast } from 'sonner';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { usePanel } from '@/auth/providers/PanelProvider';
+import { useGetInsightsAdAccountPeriod } from '@/graphql/services/ContasAnuncio';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 
-const TableRanking = () => {
-  const { id } = useParams();
-  const { dataRanking } = usePanel();
+const TableSpendDaily = () => {
+  const { id: adAccountId } = useParams<{ id: string }>();
+  const [type, setType] = useState<'week' | 'mounth' | 'tree-mouth' | 'year'>('mounth');
+
+  const { data, refetch } = useGetInsightsAdAccountPeriod({ type, adAccountId });
+
+  // 🚀 Mapeando o retorno do GraphQL em linhas para o DataGrid
+  const dataSpendDaily = useMemo(() => {
+    const gastos = data?.GetInsightsGastosPeriodos;
+    if (!gastos) return [];
+
+    // monta as linhas com o índice original (idx) p/ desempate por data mais recente
+    const rows = gastos.categories.map((dia: string, index: number) => ({
+      id: index + 1,
+      idx: index, // índice original: maior = mais recente
+      dia,
+      gastoTotal: gastos.data[index],
+      moeda: 'BRL'
+    }));
+
+    // ordena: maior gasto primeiro; empate -> mais recente (idx maior) primeiro
+    rows.sort((a, b) => {
+      if (b.gastoTotal !== a.gastoTotal) return b.gastoTotal - a.gastoTotal;
+      return b.idx - a.idx;
+    });
+
+    return rows;
+  }, [data]);
 
   const columns = useMemo<ColumnDef<any>[]>(
     () => [
@@ -29,10 +60,10 @@ const TableRanking = () => {
         meta: { headerClassName: 'w-0 text-center' }
       },
       {
-        accessorKey: 'nome',
-        header: ({ column }) => <DataGridColumnHeader title="Nome da Conta" column={column} />,
-        cell: ({ row }) => row.original.nome,
-        meta: { headerClassName: 'min-w-[200px] text-center' }
+        accessorKey: 'dia',
+        header: ({ column }) => <DataGridColumnHeader title="Dia" column={column} />,
+        cell: ({ row }) => row.original.dia,
+        meta: { headerClassName: 'min-w-[120px] text-center' }
       },
       {
         accessorKey: 'gastoTotal',
@@ -45,16 +76,6 @@ const TableRanking = () => {
         meta: { headerClassName: 'min-w-[160px] text-center' }
       },
       {
-        accessorKey: 'saldoMeta',
-        header: ({ column }) => <DataGridColumnHeader title="Saldo Meta (R$)" column={column} />,
-        cell: ({ row }) =>
-          new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-          }).format(row.original.saldoMeta),
-        meta: { headerClassName: 'min-w-[160px] text-center' }
-      },
-      {
         accessorKey: 'moeda',
         header: ({ column }) => <DataGridColumnHeader title="Moeda" column={column} />,
         cell: ({ row }) => {
@@ -64,27 +85,6 @@ const TableRanking = () => {
           return '-';
         },
         meta: { headerClassName: 'min-w-[120px] text-center' }
-      },
-      {
-        accessorKey: 'fusoHorario',
-        header: ({ column }) => <DataGridColumnHeader title="Fuso Horário" column={column} />,
-        cell: ({ row }) => row.original.fusoHorario ?? '-',
-        meta: { headerClassName: 'min-w-[180px] text-center' }
-      },
-      {
-        id: 'click',
-        header: () => 'Alerta',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <Link
-            to={`/depositos/detalhes`}
-            title="Detalhes do Depósito"
-            className="btn btn-icon btn-light btn-clear btn-sm"
-          >
-            <KeenIcon icon="cheque" style="duotone" />
-          </Link>
-        ),
-        meta: { headerClassName: 'w-[60px] text-center' }
       }
     ],
     []
@@ -105,16 +105,29 @@ const TableRanking = () => {
 
   const Toolbar = () => {
     const { table } = useDataGrid();
-    const [show, setShow] = useState(false);
-
     return (
       <div className="card-header flex-wrap px-5 py-4 border-b-0">
-        <h3 className="card-title">Ranking</h3>
+        <h3 className="card-title">Gasto Diário</h3>
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* <Button variant="secondary" size="sm" onClick={() => setShow(true)}>
-            <KeenIcon icon="plus" />
-            Movimentações
-          </Button> */}
+          <div className="flex items-center gap-5">
+            <Select
+              defaultValue={type}
+              onValueChange={(value) => {
+                setType(value as typeof type);
+                refetch({ type: value });
+              }}
+            >
+              <SelectTrigger className="w-40" size="sm">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent className="w-40">
+                <SelectItem value="week">Última semana</SelectItem>
+                <SelectItem value="mounth">Mês atual</SelectItem>
+                <SelectItem value="tree-mouth">Últimos 3 meses</SelectItem>
+                <SelectItem value="year">Ano atual</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <DataGridColumnVisibility table={table} />
         </div>
       </div>
@@ -124,15 +137,15 @@ const TableRanking = () => {
   return (
     <DataGrid
       columns={columns}
-      data={dataRanking}
+      data={dataSpendDaily}
       rowSelection={true}
       onRowSelectionChange={handleRowSelection}
       pagination={{ size: 10 }}
-      sorting={[{ id: 'gastoTotal', desc: true }]}
+      sorting={[{ id: 'dia', desc: true }]}
       toolbar={<Toolbar />}
       layout={{ card: true }}
     />
   );
 };
 
-export { TableRanking };
+export { TableSpendDaily };

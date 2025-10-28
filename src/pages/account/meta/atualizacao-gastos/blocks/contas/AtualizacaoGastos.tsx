@@ -21,6 +21,13 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ModalAjusteLimite } from '@/partials/modals/ajutes-limite/create';
 import { useTempoRestante } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from '@/components/ui/dropdown-menu';
+import { ModalSincronizacaoPersonalizada } from '@/partials/modals/sincronizacao/Modal';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;
@@ -34,6 +41,7 @@ const ContasTable = () => {
   const [isSyncingAll, setIsSyncingAll] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [openCustomModal, setOpenCustomModal] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
 
   async function syncAllAccounts() {
@@ -145,15 +153,13 @@ const ContasTable = () => {
         accessorKey: 'saldoMeta',
         accessorFn: (row) => {
           const valorReais = Number(row.saldoMeta) || 0;
-          // retorna em centavos (inteiro)
           return Math.round(valorReais * 100);
         },
         header: ({ column }) => <DataGridColumnHeader title="No Meta" column={column} />,
         cell: (info) => {
           const valorCentavos = info.getValue<number>();
           if (typeof valorCentavos !== 'number') return '-';
-
-          const valorReais = valorCentavos / 100; // volta para reais só para exibir
+          const valorReais = valorCentavos / 100;
           return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
@@ -161,7 +167,6 @@ const ContasTable = () => {
         },
         meta: { headerClassName: 'min-w-[130px]' }
       },
-
       {
         id: 'a_inserir',
         header: ({ column }) => <DataGridColumnHeader title="A Inserir" column={column} />,
@@ -262,32 +267,64 @@ const ContasTable = () => {
   };
 
   const Toolbar = () => {
-    const { minutos, segundos } = useTempoRestante();
     const { table } = useDataGrid();
 
     return (
       <div className="card-header flex-wrap px-5 py-4 border-b-0">
         <h3 className="card-title">Atualização de Gastos</h3>
-       
+
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={syncAllAccounts}
-            disabled={isSyncingAll }
-          >
-            {isSyncingAll ? (
-              <>
-                <KeenIcon icon="loader" className="animate-spin" />
-                Sincronizando...
-              </>
-            ) : (
-              <>
-                <KeenIcon icon="arrows-circle" />
-                Sincronizar
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-1">
+            <div className="inline-flex rounded-md shadow-sm" role="group">
+              {/* Botão principal */}
+              <Button
+                variant="default"
+                size="sm"
+                onClick={syncAllAccounts}
+                disabled={isSyncingAll}
+                className="rounded-r-none border border-green-400"
+              >
+                {isSyncingAll ? (
+                  <>
+                    <KeenIcon icon="loader" className="animate-spin" />
+                    Sincronizando...
+                  </>
+                ) : (
+                  <>
+                    <KeenIcon icon="arrows-circle" />
+                    Sincronizar
+                  </>
+                )}
+              </Button>
+
+              {/* Dropdown separado, só a seta é trigger */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-l-none px-2 border-green-400"
+                  >
+                    <KeenIcon icon="down" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" className="w-86">
+                  <DropdownMenuItem onClick={() => setOpenCustomModal(true)}>
+                    <KeenIcon icon="calendar" className="mr-2" />
+                    Sincronização personalizada
+                  </DropdownMenuItem>
+                  <DropdownMenuItem disabled>
+                    <KeenIcon icon="clock" className="mr-2" />
+                    Agendar sincronização (em breve)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <DataGridColumnVisibility table={table} />
+          </div>
+
           <DataGridColumnVisibility table={table} />
         </div>
       </div>
@@ -307,10 +344,17 @@ const ContasTable = () => {
         layout={{ card: true }}
       />
 
+      {/* Modal de ajuste de limite */}
       <ModalAjusteLimite
         contaAnuncioID={selectedAccountId ?? ''}
         open={openModal}
         onOpenChange={() => setOpenModal(false)}
+      />
+
+      {/* Novo modal de sincronização personalizada */}
+      <ModalSincronizacaoPersonalizada
+        open={openCustomModal}
+        onOpenChange={() => setOpenCustomModal(false)}
       />
     </>
   );
