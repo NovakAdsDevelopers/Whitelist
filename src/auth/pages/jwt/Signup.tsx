@@ -64,9 +64,9 @@ const Signup = () => {
           duration: 3000
         });
 
-        setTimeout(() => {
-          navigate(from, { replace: true });
-        }, 3000);
+        // setTimeout(() => {
+        //   navigate(from, { replace: true });
+        // }, 3000);
       } catch (error: any) {
         console.error(error);
         toast.message('❌ Erro ao realizar cadastro', {
