@@ -32,7 +32,7 @@ const SidebarSecondary = () => {
         {pathname === '/' ? ( <SidebarMenuMeta /> ) : 
         pathname.startsWith('/meta/') ? (<SidebarMenuMeta /> ) :
          pathname === '/dashboard' ? (<SidebarMenuDashboard />) : 
-         pathname === '/painel' || pathname.startsWith('/painel/') || currentUser?.tipo === 'ADMIN' ? ( <SidebarMenuPainel /> ) : 
+         pathname === '/painel' || pathname.startsWith('/painel/') || currentUser?.tipo === 'ADMIN'  ? ( <SidebarMenuPainel /> ) : 
          pathname === '/backoffice' || pathname.startsWith('/backoffice/') || currentUser?.tipo === 'ADMIN' ? ( <SidebarMenuBackoffice /> ) : 
          (<SidebarMenuDefault /> )}
       </div>

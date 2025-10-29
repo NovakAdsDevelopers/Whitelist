@@ -9,7 +9,7 @@ export const LOGIN = gql`
 `;
 
 export const REGISTER = gql`
-  mutation Mutation($data: UsuarioInput!) {
+  mutation SetUsuario($data: UsuarioInput!) {
     SetUsuario(data: $data) {
       id
     }
