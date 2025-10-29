@@ -1,12 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { KeenIcon, Menu, MenuItem, MenuToggle, DefaultTooltip, MenuIcon } from '@/components';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getHeight, toAbsoluteUrl } from '@/utils';
 import { useViewport } from '@/hooks';
 import { DropdownUser } from '@/partials/dropdowns/user';
 import { DropdownChat } from '@/partials/dropdowns/chat';
 import { DropdownApps } from '@/partials/dropdowns/apps';
 import { useLanguage } from '@/i18n';
+import { useAuthContext } from '@/auth'; // 🆕 import
 
 interface IMenuItem {
   icon: string;
@@ -15,7 +16,7 @@ interface IMenuItem {
   rootPath?: string;
 }
 
-const menuItems: IMenuItem[] = [
+const ALL_MENU_ITEMS: IMenuItem[] = [
   { icon: 'element-1', tooltip: 'Dashboard', path: '/dashboard', rootPath: '/dashboard' },
   { icon: 'element-3', tooltip: 'Paineis', path: '/painel', rootPath: '/painel' },
   {
@@ -26,7 +27,7 @@ const menuItems: IMenuItem[] = [
   },
   {
     icon: 'chart-pie-4',
-    tooltip: 'Backoffice',
+    tooltip: 'Backoffice',          // 🔒 este será filtrado para não-admin
     path: '/backoffice',
     rootPath: '/backoffice'
   }
@@ -36,10 +37,21 @@ const SidebarPrimary = () => {
   const headerRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
   const itemUserRef = useRef<any>(null);
+  const itemChatRef = useRef<any>(null);
+
   const [scrollableHeight, setScrollableHeight] = useState<number>(0);
   const [viewportHeight] = useViewport();
   const scrollableOffset = 80;
   const { isRTL } = useLanguage();
+
+  const { currentUser } = useAuthContext();                 // 🆕
+  const isAdmin = currentUser?.tipo === 'ADMIN';            // 🆕
+
+  // 🆕 Filtra o Backoffice para não-admins
+  const menuItems = useMemo(
+    () => ALL_MENU_ITEMS.filter(item => !(item.tooltip === 'Backoffice' && !isAdmin)),
+    [isAdmin]
+  );
 
   useEffect(() => {
     if (headerRef.current && footerRef.current) {
@@ -53,16 +65,23 @@ const SidebarPrimary = () => {
   }, [viewportHeight]);
 
   const { pathname } = useLocation();
-  const [selectedMenuItem, setSelectedMenuItem] = useState(menuItems[0]);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<IMenuItem>(menuItems[0]);
 
+  // Atualiza o selecionado quando a rota mudar
   useEffect(() => {
-    menuItems.forEach((item) => {
-      if (item.rootPath === pathname || (item.rootPath && pathname.includes(item.rootPath))) {
-        setSelectedMenuItem(item);
-      }
-    });
-  }, [pathname]);
-  const itemChatRef = useRef<any>(null);
+    const found = menuItems.find(
+      (item) => item.rootPath === pathname || (item.rootPath && pathname.includes(item.rootPath!))
+    );
+    if (found) setSelectedMenuItem(found);
+  }, [pathname, menuItems]);
+
+  // Garante um selecionado válido se o role mudar e esconder o item atual
+  useEffect(() => {
+    if (!menuItems.includes(selectedMenuItem)) {
+      setSelectedMenuItem(menuItems[0]);
+    }
+  }, [menuItems, selectedMenuItem]);
+
   const handleDropdownChatShow = () => {
     window.dispatchEvent(new Event('resize'));
   };
@@ -82,19 +101,19 @@ const SidebarPrimary = () => {
           />
         </Link>
       </div>
+
       <div className="flex grow shrink-0">
         <div
           className="scrollable-y-hover grow gap-2.5 shrink-0 flex ps-4 flex-col"
-          style={{
-            height: `${scrollableHeight}px`
-          }}
+          style={{ height: `${scrollableHeight}px` }}
         >
           {menuItems.map((item, index) => (
             <DefaultTooltip key={index} title={item.tooltip} placement="right">
               <Link
-                key={index}
                 to={item.path}
-                className={`btn btn-icon btn-icon-xl rounded-md size-9 border border-transparent text-gray-600 hover:bg-light hover:text-primary hover:border-gray-200 ${item === selectedMenuItem && 'active bg-light text-primary border-gray-200'}`}
+                className={`btn btn-icon btn-icon-xl rounded-md size-9 border border-transparent text-gray-600 hover:bg-light hover:text-primary hover:border-gray-200 ${
+                  item === selectedMenuItem && 'active bg-light text-primary border-gray-200'
+                }`}
               >
                 <MenuIcon>
                   <KeenIcon icon={item.icon} />
@@ -105,6 +124,7 @@ const SidebarPrimary = () => {
           ))}
         </div>
       </div>
+
       <div ref={footerRef} className="flex flex-col gap-5 items-center shrink-0">
         <div className="flex flex-col gap-1.5">
           <Menu>
@@ -123,20 +143,12 @@ const SidebarPrimary = () => {
               trigger="click"
               dropdownProps={{
                 placement: isRTL() ? 'left-end' : 'right-end',
-                modifiers: [
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: [10, 15] // [skid, distance]
-                    }
-                  }
-                ]
+                modifiers: [{ name: 'offset', options: { offset: [10, 15] } }]
               }}
             >
               <MenuToggle className="btn btn-icon btn-icon-xl relative rounded-md size-9 border border-transparent hover:bg-light hover:text-primary hover:border-gray-200 dropdown-open:bg-gray-200 text-gray-600">
                 <KeenIcon icon="messages" />
               </MenuToggle>
-
               {DropdownChat({ menuTtemRef: itemChatRef })}
             </MenuItem>
           </Menu>
@@ -149,20 +161,12 @@ const SidebarPrimary = () => {
               trigger="click"
               dropdownProps={{
                 placement: isRTL() ? 'left-end' : 'right-end',
-                modifiers: [
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: isRTL() ? [10, 15] : [-10, 15] // [skid, distance]
-                    }
-                  }
-                ]
+                modifiers: [{ name: 'offset', options: { offset: isRTL() ? [10, 15] : [-10, 15] } }]
               }}
             >
               <MenuToggle className="btn btn-icon btn-icon-xl relative rounded-md size-9 border border-transparent hover:bg-light hover:text-primary hover:border-gray-200 dropdown-open:bg-gray-200 text-gray-600">
                 <KeenIcon icon="setting-2" />
               </MenuToggle>
-
               {DropdownApps()}
             </MenuItem>
           </Menu>
@@ -175,14 +179,7 @@ const SidebarPrimary = () => {
             trigger="click"
             dropdownProps={{
               placement: isRTL() ? 'left-end' : 'right-end',
-              modifiers: [
-                {
-                  name: 'offset',
-                  options: {
-                    offset: isRTL() ? [10, 15] : [-10, 15] // [skid, distance]
-                  }
-                }
-              ]
+              modifiers: [{ name: 'offset', options: { offset: isRTL() ? [10, 15] : [-10, 15] } }]
             }}
           >
             <MenuToggle className="btn btn-icon btn-icon-xl relative rounded-md size-9 border border-transparent hover:bg-light hover:text-primary hover:border-gray-200 dropdown-open:bg-gray-200 text-gray-600">
