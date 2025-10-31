@@ -1,5 +1,5 @@
-import { ReactElement } from 'react';
-import { Navigate, Route, Routes } from 'react-router';
+import { ReactElement, useEffect } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { DefaultPage, Demo1DarkSidebarPage } from '@/pages/dashboards';
 import {
   ProfileActivityPage,
@@ -107,17 +107,54 @@ import { ContasGastosPage } from '@/pages/account/meta/contas-gastos';
 import { PainelGestaoContasHistoryFunds } from '@/pages/account/painel/gestaoContas/HistoricoFundos/PainelGestaoContasHistory';
 import { PainelExtratoFinanceiroPage } from '@/pages/account/painel/extrato-financeiro';
 
+// ==========================================================
+// 🧩 Hook de título dinâmico — altera o título da aba
+// ==========================================================
+const useDynamicTitle = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const base = 'Novak';
+    let title = base;
+
+    // Adicione ou ajuste aqui conforme as rotas:
+    if (pathname === '/') title = `Início | ${base}`;
+    else if (pathname.startsWith('/dashboard')) title = `Dashboard | ${base}`;
+    else if (pathname.startsWith('/painel/relatorios')) title = `Relatórios | ${base}`;
+    else if (pathname.startsWith('/painel/integracoes')) title = `Integrações | ${base}`;
+    else if (pathname.startsWith('/painel/solicitacoes')) title = `Solicitações | ${base}`;
+    else if (pathname.startsWith('/painel/status-contas')) title = `Status de Contas | ${base}`;
+    else if (pathname.startsWith('/painel/gestao-contas')) title = `Gestão de Contas | ${base}`;
+    else if (pathname.startsWith('/painel/resumo-contas')) title = `Resumo de Contas | ${base}`;
+    else if (pathname.startsWith('/painel/extrato-financeiro')) title = `Extrato Financeiro | ${base}`;
+    else if (pathname.startsWith('/backoffice')) title = `Backoffice | ${base}`;
+    else if (pathname.startsWith('/meta')) title = `Meta | ${base}`;
+    else if (pathname.startsWith('/auth')) title = `Autenticação | ${base}`;
+    else if (pathname.startsWith('/account')) title = `Conta | ${base}`;
+    else if (pathname.startsWith('/network')) title = `Network | ${base}`;
+    else if (pathname.startsWith('/public-profile')) title = `Perfil Público | ${base}`;
+    else if (pathname.startsWith('/error')) title = `Erro | ${base}`;
+
+    document.title = title;
+  }, [pathname]);
+};
+
+// ==========================================================
+// 🚀 Configuração principal de rotas
+// ==========================================================
 const AppRoutingSetup = (): ReactElement => {
+  useDynamicTitle(); // ativa o título dinâmico
+
   return (
     <Routes>
       <Route element={<RequireAuth />}>
         <Route element={<Demo4Layout />}>
-          {/* Página inicial com ClientProvider */}
+          {/* === PÁGINAS INICIAIS === */}
           <Route
             path="/"
             element={
               <ClientProvider>
-                <AtualizacaoGastosPage /> {/* ou outra página inicial que você quiser renderizar */}
+                <AtualizacaoGastosPage />
               </ClientProvider>
             }
           />
@@ -126,32 +163,30 @@ const AppRoutingSetup = (): ReactElement => {
             path="/meta/contas-gastos"
             element={
               <ClientProvider>
-                <ContasGastosPage /> {/* ou outra página inicial que você quiser renderizar */}
+                <ContasGastosPage />
               </ClientProvider>
             }
           />
 
-          {/* Página inicial com ClientProvider */}
           <Route
             path="/dashboard"
             element={
               <ClientProvider>
-                <DashboardMetaPage /> {/* ou outra página inicial que você quiser renderizar */}
+                <DashboardMetaPage />
               </ClientProvider>
             }
           />
 
-          {/* Página inicial com ClientProvider */}
           <Route
             path="/painel"
             element={
               <ClientProvider>
-                <PainelRelatorioPage /> {/* ou outra página inicial que você quiser renderizar */}
+                <PainelRelatorioPage />
               </ClientProvider>
             }
           />
 
-          {/* Demais rotas protegidas */}
+          {/* === PÚBLIC PROFILE === */}
           <Route path="/dark-sidebar" element={<Demo1DarkSidebarPage />} />
           <Route path="/public-profile/profiles/default" element={<ProfileDefaultPage />} />
           <Route path="/public-profile/profiles/creator" element={<ProfileCreatorPage />} />
@@ -173,15 +208,12 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/public-profile/campaigns/list" element={<CampaignsListPage />} />
           <Route path="/public-profile/empty" element={<ProfileEmptyPage />} />
 
-          {/* Conta */}
+          {/* === ACCOUNT === */}
           <Route path="/account/home/get-started" element={<AccountGetStartedPage />} />
           <Route path="/account/home/user-profile" element={<AccountUserProfilePage />} />
           <Route path="/account/home/company-profile" element={<AccountCompanyProfilePage />} />
           <Route path="/account/home/settings-sidebar" element={<AccountSettingsSidebarPage />} />
-          <Route
-            path="/account/home/settings-enterprise"
-            element={<AccountSettingsEnterprisePage />}
-          />
+          <Route path="/account/home/settings-enterprise" element={<AccountSettingsEnterprisePage />} />
           <Route path="/account/home/settings-plain" element={<AccountSettingsPlainPage />} />
           <Route path="/account/home/settings-modal" element={<AccountSettingsModalPage />} />
           <Route path="/account/billing/basic" element={<AccountBasicPage />} />
@@ -190,26 +222,11 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/account/billing/history" element={<AccountHistoryPage />} />
           <Route path="/account/security/get-started" element={<AccountSecurityGetStartedPage />} />
           <Route path="/account/security/overview" element={<AccountOverviewPage />} />
-          <Route
-            path="/account/security/allowed-ip-addresses"
-            element={<AccountAllowedIPAddressesPage />}
-          />
-          <Route
-            path="/account/security/privacy-settings"
-            element={<AccountPrivacySettingsPage />}
-          />
-          <Route
-            path="/account/security/device-management"
-            element={<AccountDeviceManagementPage />}
-          />
-          <Route
-            path="/account/security/backup-and-recovery"
-            element={<AccountBackupAndRecoveryPage />}
-          />
-          <Route
-            path="/account/security/current-sessions"
-            element={<AccountCurrentSessionsPage />}
-          />
+          <Route path="/account/security/allowed-ip-addresses" element={<AccountAllowedIPAddressesPage />} />
+          <Route path="/account/security/privacy-settings" element={<AccountPrivacySettingsPage />} />
+          <Route path="/account/security/device-management" element={<AccountDeviceManagementPage />} />
+          <Route path="/account/security/backup-and-recovery" element={<AccountBackupAndRecoveryPage />} />
+          <Route path="/account/security/current-sessions" element={<AccountCurrentSessionsPage />} />
           <Route path="/account/security/security-log" element={<AccountSecurityLogPage />} />
           <Route path="/account/members/team-starter" element={<AccountTeamsStarterPage />} />
           <Route path="/account/members/teams" element={<AccountTeamsPage />} />
@@ -218,14 +235,8 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/account/members/team-members" element={<AccountTeamMembersPage />} />
           <Route path="/account/members/import-members" element={<AccountImportMembersPage />} />
           <Route path="/account/members/roles" element={<AccountRolesPage />} />
-          <Route
-            path="/account/members/permissions-toggle"
-            element={<AccountPermissionsTogglePage />}
-          />
-          <Route
-            path="/account/members/permissions-check"
-            element={<AccountPermissionsCheckPage />}
-          />
+          <Route path="/account/members/permissions-toggle" element={<AccountPermissionsTogglePage />} />
+          <Route path="/account/members/permissions-check" element={<AccountPermissionsCheckPage />} />
           <Route path="/account/integrations" element={<AccountIntegrationsPage />} />
           <Route path="/account/notifications" element={<AccountNotificationsPage />} />
           <Route path="/account/api-keys" element={<AccountApiKeysPage />} />
@@ -233,7 +244,7 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/account/invite-a-friend" element={<AccountInviteAFriendPage />} />
           <Route path="/account/activity" element={<AccountActivityPage />} />
 
-          {/* Network */}
+          {/* === NETWORK === */}
           <Route path="/network/get-started" element={<NetworkGetStartedPage />} />
           <Route path="/network/user-cards/mini-cards" element={<NetworkMiniCardsPage />} />
           <Route path="/network/user-cards/team-crew" element={<NetworkUserCardsTeamCrewPage />} />
@@ -247,7 +258,7 @@ const AppRoutingSetup = (): ReactElement => {
           <Route path="/network/user-table/store-clients" element={<NetworkStoreClientsPage />} />
           <Route path="/network/user-table/visitors" element={<NetworkVisitorsPage />} />
 
-          {/* Meta */}
+          {/* === META === */}
           <Route
             path="/meta/*"
             element={
@@ -263,6 +274,7 @@ const AppRoutingSetup = (): ReactElement => {
           />
           <Route path="/meta/:id/insights" element={<ContasInsightPage />} />
 
+          {/* === PAINEL === */}
           <Route
             path="/painel/*"
             element={
@@ -272,11 +284,9 @@ const AppRoutingSetup = (): ReactElement => {
                   <Route path="solicitacoes" element={<PainelSolicitacoesPage />} />
                   <Route path="integracoes" element={<PainelIntegracoesPage />} />
                   <Route path="integracoes/:name" element={<IntegracaoPage />} />
-
                   <Route path="status-contas" element={<PainelStatusContasPage />} />
                   <Route path="gestao-contas" element={<PainelGestaoContasPage />} />
                   <Route path="extrato-financeiro" element={<PainelExtratoFinanceiroPage />} />
-
                   <Route
                     path="gestao-contas/:id/history"
                     element={
@@ -285,7 +295,6 @@ const AppRoutingSetup = (): ReactElement => {
                       </AdAccountProvider>
                     }
                   />
-
                   <Route
                     path="gestao-contas/:id/funds"
                     element={
@@ -294,15 +303,14 @@ const AppRoutingSetup = (): ReactElement => {
                       </AdAccountProvider>
                     }
                   />
-
                   <Route path="resumo-contas" element={<PainelResumoContasPage />} />
-
                   <Route path="gestao-contas/:id" element={<PainelContasAnuncioPage />} />
                 </Routes>
               </ClientProvider>
             }
           />
 
+          {/* === BACKOFFICE === */}
           <Route
             path="/backoffice/*"
             element={
@@ -316,16 +324,14 @@ const AppRoutingSetup = (): ReactElement => {
             }
           />
 
-          {/* Auth */}
+          {/* === AUTH === */}
           <Route path="/auth/welcome-message" element={<AuthenticationWelcomeMessagePage />} />
-          <Route
-            path="/auth/account-deactivated"
-            element={<AuthenticationAccountDeactivatedPage />}
-          />
+          <Route path="/auth/account-deactivated" element={<AuthenticationAccountDeactivatedPage />} />
           <Route path="/authentication/get-started" element={<AuthenticationGetStartedPage />} />
         </Route>
       </Route>
 
+      {/* === ERROS E DEFAULTS === */}
       <Route path="error/*" element={<ErrorsRouting />} />
       <Route path="auth/*" element={<AuthPage />} />
       <Route path="*" element={<Navigate to="/error/404" />} />

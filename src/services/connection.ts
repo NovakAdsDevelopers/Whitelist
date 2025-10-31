@@ -2,60 +2,92 @@ import { ApolloClient, HttpLink, InMemoryCache, from } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import axios from "axios";
 
-// ====================================================================
-// 🔧 Variáveis de ambiente
-// ====================================================================
-const API_URL = import.meta.env.VITE_APP_API_URL; // URL da sua API GraphQL principal
-const VITE_APP_API_META_URL = import.meta.env.VITE_APP_API_META_URL; // URL da API do Meta
+const API_URL = import.meta.env.VITE_APP_API_URL;
+const VITE_APP_API_META_URL = import.meta.env.VITE_APP_API_META_URL;
 
 if (!API_URL) throw new Error("VITE_APP_API_URL não definida no .env");
-if (!VITE_APP_API_META_URL) throw new Error("VITE_APP_API_META_URL não definida no .env");
+if (!VITE_APP_API_META_URL)
+  throw new Error("VITE_APP_API_META_URL não definida no .env");
 
 // ====================================================================
-// 💬 Callback opcional (para exibir modal de sessão expirada)
+// 🔔 Callbacks de UI / Auth
 // ====================================================================
-let openModalCallback: (path: any) => void;
-export const setOpenModalCallback = (callback: (path: any) => void) => {
-  openModalCallback = callback;
+let openModalCallback: (path: unknown) => void;
+export const setOpenModalCallback = (cb: (path: unknown) => void) => {
+  openModalCallback = cb;
+};
+
+let logoutCallback: () => void;
+export const setLogoutCallback = (cb: () => void) => {
+  logoutCallback = cb;
+};
+
+// 🔒 Evita múltiplos disparos de logout simultâneos
+let authErrorLock = false;
+const triggerAuthHandlers = (path?: unknown) => {
+  if (authErrorLock) return;
+  authErrorLock = true;
+
+  try {
+    if (openModalCallback) openModalCallback(path);
+    if (logoutCallback) logoutCallback();
+  } finally {
+    // libera após um pequeno debounce
+    setTimeout(() => (authErrorLock = false), 2000);
+  }
 };
 
 // ====================================================================
 // 🚨 Tratamento de erros
 // ====================================================================
 const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path, extensions }) => {
-      if (message.includes("jwt expired")) {
-        console.warn("Token expirado — abrir modal ou refazer login");
-        if (openModalCallback) openModalCallback(path);
+  if (graphQLErrors?.length) {
+    for (const err of graphQLErrors) {
+      const message = err.message?.toLowerCase?.() ?? "";
+      const code = (err.extensions?.code ?? "").toString().toUpperCase();
+
+      // 🚨 só dispara logout se for token expirado ou mensagem de sessão expirada
+      const isJwtExpired =
+        message.includes("jwt expired") ||
+        message.includes("tokenexpirederror") ||
+        message.includes("sessão expirada") ||
+        code === "TOKEN_EXPIRED";
+
+      if (isJwtExpired) {
+        console.warn("⚠️ Token expirado — sessão encerrada.");
+        triggerAuthHandlers(err.path);
+        return;
       }
 
-      switch (extensions?.code) {
-        case "UNAUTHENTICATED":
-          console.warn("Usuário não autenticado.");
-          break;
-        default:
-          console.log(`[GraphQL error]:`, message);
+      // ⚠️ Evita logout indevido em erros genéricos (UNAUTHENTICATED, 401, etc.)
+      if (import.meta.env.DEV) {
+        console.log(
+          `[GraphQL error]: Message: ${err.message}, Code: ${code}, Path: ${err.path}`
+        );
       }
-
-      console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`);
-    });
+    }
   }
 
-  if (networkError) console.error(`[Network error]:`, networkError);
+  // ⚠️ 401 genérico não aciona logout
+  const status =
+    (networkError as any)?.statusCode ?? (networkError as any)?.status;
+  if (status === 401) {
+    console.warn("⚠️ Erro 401 detectado — ignorado (sem logout)");
+  }
+
+  if (networkError && import.meta.env.DEV) {
+    console.error("[Network error]:", networkError);
+  }
 });
 
 // ====================================================================
-// 🌐 Link HTTP principal — com credenciais (cookies httpOnly)
+// 🌐 Links HTTP com cookies JWT (httpOnly)
 // ====================================================================
 const httpLink = new HttpLink({
   uri: API_URL,
-  credentials: "include", // 🔥 envia cookies automaticamente (httpOnly)
+  credentials: "include", // garante envio automático de cookies
 });
 
-// ====================================================================
-// 🚀 Apollo Client principal
-// ====================================================================
 export const client = new ApolloClient({
   cache: new InMemoryCache(),
   link: from([errorLink, httpLink]),
@@ -67,11 +99,11 @@ export const client = new ApolloClient({
 });
 
 // ====================================================================
-// 🛰️ Apollo Client secundário (API do Meta GraphQL)
+// 🛰️ Apollo Client secundário (API Meta GraphQL)
 // ====================================================================
 const metaHttpLink = new HttpLink({
   uri: VITE_APP_API_META_URL,
-  credentials: "include", // também envia cookies se precisar
+  credentials: "include",
 });
 
 export const metaClient = new ApolloClient({
@@ -83,20 +115,21 @@ export const metaClient = new ApolloClient({
 });
 
 // ====================================================================
-// 🧩 Axios (caso a API Meta seja REST)
+// 🧩 Axios (para REST Meta API)
 // ====================================================================
 export const metaApi = axios.create({
   baseURL: VITE_APP_API_META_URL,
-  withCredentials: true, // 🔥 garante envio automático de cookies
+  withCredentials: true,
 });
 
-// Função auxiliar para requisições REST
 export const fetchMetaData = async (endpoint: string) => {
   try {
-    const response = await metaApi.get(endpoint);
-    return response.data;
+    const { data } = await metaApi.get(endpoint);
+    return data;
   } catch (error) {
-    console.error("Erro ao buscar dados do Meta:", error);
+    if (import.meta.env.DEV) {
+      console.error("Erro ao buscar dados do Meta:", error);
+    }
     throw error;
   }
 };

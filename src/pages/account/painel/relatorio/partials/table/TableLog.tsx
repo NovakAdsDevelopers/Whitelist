@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { usePanel } from '@/auth/providers/PanelProvider';
+import { CreditCard } from 'lucide-react';
 
 const TableRanking = () => {
   const { id } = useParams();
@@ -47,11 +48,26 @@ const TableRanking = () => {
       {
         accessorKey: 'saldoMeta',
         header: ({ column }) => <DataGridColumnHeader title="Saldo Meta (R$)" column={column} />,
-        cell: ({ row }) =>
-          new Intl.NumberFormat('pt-BR', {
+        cell: ({ row }) => {
+          const raw = row.original.saldoMeta;
+          const valor = Number(raw ?? 0);
+
+          if (Number.isFinite(valor) && valor < 0) {
+            // 🔻 Negativo: mostra apenas ícone + texto
+            return (
+              <div className="flex items-center justify-center gap-2 text-red-600">
+                <CreditCard className="w-4 h-4" aria-hidden="true" />
+                <span className="text-sm font-medium">BM de Crédito</span>
+              </div>
+            );
+          }
+
+          // ✅ Zero ou positivo: mostra o valor formatado (como antes)
+          return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
-          }).format(row.original.saldoMeta),
+          }).format(valor || 0);
+        },
         meta: { headerClassName: 'min-w-[160px] text-center' }
       },
       {

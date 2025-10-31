@@ -19,7 +19,6 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/comp
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ModalAjusteLimite } from '@/partials/modals/ajutes-limite/create';
-import { useTempoRestante } from '@/lib/utils';
 import { useGetContasAnuncioCredito } from '@/graphql/services/ContasAnuncio';
 
 interface IColumnFilterProps<TData, TValue> {
@@ -246,7 +245,6 @@ const ContasTable = () => {
   };
 
   const Toolbar = () => {
-    const { minutos, segundos } = useTempoRestante();
     const { table } = useDataGrid();
 
     return (
