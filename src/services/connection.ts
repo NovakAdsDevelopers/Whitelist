@@ -22,7 +22,6 @@ export const setLogoutCallback = (cb: () => void) => {
   logoutCallback = cb;
 };
 
-// 🔒 Evita múltiplos disparos de logout simultâneos
 let authErrorLock = false;
 const triggerAuthHandlers = (path?: unknown) => {
   if (authErrorLock) return;
@@ -32,7 +31,6 @@ const triggerAuthHandlers = (path?: unknown) => {
     if (openModalCallback) openModalCallback(path);
     if (logoutCallback) logoutCallback();
   } finally {
-    // libera após um pequeno debounce
     setTimeout(() => (authErrorLock = false), 2000);
   }
 };
@@ -46,7 +44,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
       const message = err.message?.toLowerCase?.() ?? "";
       const code = (err.extensions?.code ?? "").toString().toUpperCase();
 
-      // 🚨 só dispara logout se for token expirado ou mensagem de sessão expirada
       const isJwtExpired =
         message.includes("jwt expired") ||
         message.includes("tokenexpirederror") ||
@@ -59,7 +56,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         return;
       }
 
-      // ⚠️ Evita logout indevido em erros genéricos (UNAUTHENTICATED, 401, etc.)
       if (import.meta.env.DEV) {
         console.log(
           `[GraphQL error]: Message: ${err.message}, Code: ${code}, Path: ${err.path}`
@@ -68,7 +64,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     }
   }
 
-  // ⚠️ 401 genérico não aciona logout
   const status =
     (networkError as any)?.statusCode ?? (networkError as any)?.status;
   if (status === 401) {
@@ -84,8 +79,8 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 // 🌐 Links HTTP com cookies JWT (httpOnly)
 // ====================================================================
 const httpLink = new HttpLink({
-  uri: API_URL,
-  credentials: "include", // garante envio automático de cookies
+  uri: API_URL, // ex: https://whitelistapi.onrender.com
+  credentials: "include", // ✅ garante envio automático de cookies cross-site
 });
 
 export const client = new ApolloClient({

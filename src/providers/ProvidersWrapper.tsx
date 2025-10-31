@@ -31,17 +31,15 @@ setLogoutCallback(async () => {
   try {
     await fetch(`${import.meta.env.VITE_APP_API_URL}/logout`, {
       method: "POST",
-      credentials: "include",
+      credentials: "include", // ✅ garante envio do cookie a ser limpo
     });
   } catch (err) {
     console.warn("⚠️ [LOGOUT] Erro ao limpar cookie JWT:", err);
   }
 
-  // 🔒 Limpa caches e storage
   localStorage.clear();
   sessionStorage.clear();
 
-  // 🔁 Redireciona para login (evita reload em loop)
   if (window.location.pathname !== "/auth/login") {
     window.location.replace("/auth/login");
   }
@@ -49,17 +47,10 @@ setLogoutCallback(async () => {
   setTimeout(() => ((window as any)._isLoggingOut = false), 2000);
 });
 
-// ====================================================================
-// 🧭 (Opcional) Callback para modal de sessão expirada
-// ====================================================================
 setOpenModalCallback(() => {
-  // Exemplo simples — você pode trocar por um modal customizado
   alert("⚠️ Sua sessão expirou. Faça login novamente para continuar.");
 });
 
-// ====================================================================
-// 💡 Providers globais da aplicação
-// ====================================================================
 const ProvidersWrapper = ({ children }: PropsWithChildren) => {
   return (
     <ApolloProvider client={client}>
