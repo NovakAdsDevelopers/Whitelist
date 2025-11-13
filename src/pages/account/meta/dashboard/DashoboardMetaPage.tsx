@@ -22,7 +22,23 @@ const DashboardMetaPage = () => {
               <ToolbarPageTitle />
               <ToolbarDescription>
                 <div className="flex text-lg items-center gap-2">
-                 <h1>Grade de Horários</h1>
+                  <h1>Grade de Horários</h1>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('http://localhost:4005/meta/test-error-sync', {
+                          method: 'GET',
+                          credentials: 'include' // envia cookies
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        console.log('OK:', res.status, data);
+                      } catch (e) {
+                        console.error('Falha na requisição:', e);
+                      }
+                    }}
+                  >
+                    teste
+                  </button>
                 </div>
               </ToolbarDescription>
             </ToolbarHeading>

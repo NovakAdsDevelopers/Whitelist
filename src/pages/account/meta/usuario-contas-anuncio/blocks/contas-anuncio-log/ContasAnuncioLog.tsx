@@ -22,6 +22,7 @@ import ModalMoneyTransfer from '@/partials/modals/clientes/contas/Modal';
 import { Database, Loader2 } from 'lucide-react';
 import { metaApi } from '@/services/connection';
 import { ModalClienteContaAnuncioEdit } from '@/partials/modals/cliente-conta-anuncio/edit';
+import { EditableCell } from './EditableCell';
 
 interface IColumnFilterProps<TData, TValue> {
   column: Column<TData, TValue>;
@@ -54,7 +55,7 @@ const ContasAnuncioLog = () => {
   async function syncAccount(conta_anuncio_id: string) {
     setIsSyncing(true);
     try {
-      const res = await metaApi.get(`/sync-ads/${conta_anuncio_id}`);
+      const res = await metaApi.get(`/sync-ads/ad_account/${conta_anuncio_id}`);
       if (res.status === 200) {
         toast.success(res.data.message || 'Sincronização com o Meta concluída!');
         await refetch();
@@ -113,6 +114,20 @@ const ContasAnuncioLog = () => {
         meta: { headerClassName: 'w-0' }
       },
       {
+        accessorFn: (row) => row.id,
+        id: 'id',
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            title="ID"
+            filter={<ColumnInputFilter column={column} />}
+            column={column}
+          />
+        ),
+        enableSorting: true,
+        cell: (info) => info.getValue(),
+        meta: { headerClassName: 'min-w-[200px]' }
+      },
+      {
         accessorFn: (row) => row.nome,
         id: 'conta',
         header: ({ column }) => (
@@ -123,9 +138,18 @@ const ContasAnuncioLog = () => {
           />
         ),
         enableSorting: true,
-        cell: (info) => info.getValue(),
+        cell: ({ row }) => (
+          <EditableCell
+            value={row.original.nome}
+            onConfirm={(newValue) => {
+              // chamada de API / mutation aqui
+              console.log('Novo nome confirmado:', newValue, 'para id:', row.original.id);
+            }}
+          />
+        ),
         meta: { headerClassName: 'min-w-[200px]' }
       },
+
       {
         accessorFn: (row) => row.gastoTotal,
         id: 'gastoTotal',
@@ -141,6 +165,28 @@ const ContasAnuncioLog = () => {
         accessorFn: (row) => row.depositoTotal,
         id: 'depositoTotal',
         header: ({ column }) => <DataGridColumnHeader title="Depósito Total" column={column} />,
+        enableSorting: true,
+        cell: (info) => {
+          const value = info.getValue();
+          return typeof value === 'number' && !isNaN(value) ? formatCurrency(value) : '-';
+        },
+        meta: { headerClassName: 'min-w-[200px]' }
+      },
+       {
+        accessorFn: (row) => row.depositoTotal,
+        id: 'realocacaoRecebida',
+        header: ({ column }) => <DataGridColumnHeader title="Realocação Recebida" column={column} />,
+        enableSorting: true,
+        cell: (info) => {
+          const value = info.getValue();
+          return typeof value === 'number' && !isNaN(value) ? formatCurrency(value) : '-';
+        },
+        meta: { headerClassName: 'min-w-[200px]' }
+      },
+       {
+        accessorFn: (row) => row.depositoTotal,
+        id: 'realocadoRetirado',
+        header: ({ column }) => <DataGridColumnHeader title="Realocação Retirada" column={column} />,
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
