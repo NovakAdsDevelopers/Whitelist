@@ -14,6 +14,7 @@ export const GET_CLIENTE_CONTA_ANUNCIO = gql`
         id
         clienteId
         contaAnuncioId
+        nomeContaCliente
         inicioAssociacao
         fimAssociacao
         ativo

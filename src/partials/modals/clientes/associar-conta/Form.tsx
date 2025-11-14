@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 interface IFormCreateClienteProps {
   onOpenChange: () => void;
 }
+
 const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
   const { id } = useParams();
   const clienteId = Number(id);
@@ -25,6 +26,7 @@ const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
       dataInicio: string;
       dataFim: string | null;
       hasDataFim: boolean;
+      nomeContaCliente?: string;
     }[]
   >([]);
 
@@ -35,6 +37,7 @@ const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
       try {
         const contasParaAssociar = selectedContas.map((conta) => ({
           contaAnuncioId: conta.value,
+          nomeContaCliente: conta.nomeContaCliente?.trim() || conta.label, // 👈 garantia do nome
           inicioAssociacao: toBrazilISODate(conta.dataInicio),
           fimAssociacao: conta.hasDataFim ? toBrazilISODate(conta.dataFim!) : null
         }));
@@ -44,7 +47,6 @@ const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
           contas: contasParaAssociar
         });
 
-        // Toast individual para cada conta associada
         selectedContas.forEach((conta) => {
           toast.message('✅ Conta associada com sucesso!', {
             description: `Conta: ${conta.label}`
@@ -54,7 +56,7 @@ const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
         setStatus(null);
         resetForm();
         setSelectedContas([]);
-        onOpenChange(); // fecha o modal
+        onOpenChange();
       } catch (error: any) {
         console.error(error);
         toast.message('❌ Erro ao associar contas', {
@@ -81,6 +83,7 @@ const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
                 const existing = prev.find((p) => p.value === item.value);
                 return {
                   ...item,
+                  nomeContaCliente: existing?.nomeContaCliente || item.label,
                   dataInicio: existing?.dataInicio || '',
                   dataFim: existing?.dataFim || '',
                   hasDataFim: existing?.hasDataFim || false
@@ -98,6 +101,22 @@ const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
             <p className="font-medium text-sm">{conta.label}</p>
           </div>
 
+          {/* Nome da conta */}
+          <div className="flex flex-col gap-2 mb-4">
+            <label className="text-sm text-gray-700">Nome da Conta:</label>
+            <input
+              type="text"
+              className="w-full py-2 rounded-md px-4"
+              value={conta.nomeContaCliente ?? conta.label}
+              onChange={(e) => {
+                const updated = [...selectedContas];
+                updated[index].nomeContaCliente = e.target.value;
+                setSelectedContas(updated);
+              }}
+            />
+          </div>
+
+          {/* Switch para Data Fim */}
           <div className="flex items-center justify-end gap-2 mb-2">
             <span className="text-sm">Final previsto?</span>
             <label className="inline-flex items-center cursor-pointer">
@@ -125,6 +144,7 @@ const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
             </label>
           </div>
 
+          {/* Datas */}
           <div
             className={`grid gap-4 ${
               conta.hasDataFim ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'

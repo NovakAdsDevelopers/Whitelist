@@ -1,3 +1,9 @@
+// Código atualizado para ModalAssociateAccount e FormCreateCliente
+// Inclui suporte a Select com portal e campo de nome vinculado à conta
+
+// ==========================
+// ModalAssociateAccount.tsx
+// ==========================
 import {
   Dialog,
   DialogBody,
@@ -5,9 +11,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
-import { Link } from 'react-router-dom';
-import { toAbsoluteUrl } from '@/utils';
-import { FormCreateCliente } from './Form'; // Importando o novo formulário
+import { FormCreateCliente } from './Form';
 
 interface IModalCreateClienteProps {
   open: boolean;
@@ -17,12 +21,12 @@ interface IModalCreateClienteProps {
 const ModalAssociateAccount = ({ open, onOpenChange }: IModalCreateClienteProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[700px]">
+      <DialogContent className="max-w-[700px] overflow-visible">
         <DialogHeader className="border-0">
-          <DialogTitle>Associar conta de anuncio</DialogTitle>
+          <DialogTitle>Associar conta de anúncio</DialogTitle>
         </DialogHeader>
 
-        <DialogBody className="flex flex-col items-center pt-4 pb-10">
+        <DialogBody className="flex flex-col items-center pt-4 pb-10 overflow-visible">
           <FormCreateCliente onOpenChange={onOpenChange} />
         </DialogBody>
       </DialogContent>
@@ -31,3 +35,5 @@ const ModalAssociateAccount = ({ open, onOpenChange }: IModalCreateClienteProps)
 };
 
 export { ModalAssociateAccount };
+
+

@@ -73,7 +73,7 @@ const ContasAnuncioLog = () => {
     return (
       data?.GetContasAssociadasPorCliente?.result?.map((item) => ({
         id: item.contaAnuncioId,
-        nome: item.contaAnuncio.nome,
+        nome: item.nomeContaCliente,
         status: item.ativo,
         moeda: item.contaAnuncio.moeda,
         fusoHorario: item.contaAnuncio.fusoHorario,

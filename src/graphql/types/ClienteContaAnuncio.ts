@@ -17,6 +17,7 @@ export interface TypesGetClienteContasAnuncio {
       id: number;
       clienteId: number;
       contaAnuncioId: string;
+      nomeContaCliente: string;
       inicioAssociacao: Date;
       fimAssociacao?: Date;
       ativo: boolean;
