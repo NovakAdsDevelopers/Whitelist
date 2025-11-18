@@ -140,11 +140,9 @@ const ContasAnuncioLog = () => {
         enableSorting: true,
         cell: ({ row }) => (
           <EditableCell
+            idCliente={id!}
+            idAssociacao={row.original.idAssociacao} // 🔥 adiciona aqui
             value={row.original.nome}
-            onConfirm={(newValue) => {
-              // chamada de API / mutation aqui
-              console.log('Novo nome confirmado:', newValue, 'para id:', row.original.id);
-            }}
           />
         ),
         meta: { headerClassName: 'min-w-[200px]' }
@@ -172,10 +170,12 @@ const ContasAnuncioLog = () => {
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
-       {
+      {
         accessorFn: (row) => row.depositoTotal,
         id: 'realocacaoRecebida',
-        header: ({ column }) => <DataGridColumnHeader title="Realocação Recebida" column={column} />,
+        header: ({ column }) => (
+          <DataGridColumnHeader title="Realocação Recebida" column={column} />
+        ),
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();
@@ -183,10 +183,12 @@ const ContasAnuncioLog = () => {
         },
         meta: { headerClassName: 'min-w-[200px]' }
       },
-       {
+      {
         accessorFn: (row) => row.depositoTotal,
         id: 'realocadoRetirado',
-        header: ({ column }) => <DataGridColumnHeader title="Realocação Retirada" column={column} />,
+        header: ({ column }) => (
+          <DataGridColumnHeader title="Realocação Retirada" column={column} />
+        ),
         enableSorting: true,
         cell: (info) => {
           const value = info.getValue();

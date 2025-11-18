@@ -71,14 +71,15 @@ export type VariablesSetClienteContaAnuncio = {
   clienteId: number;
   contas: {
     contaAnuncioId: string;
-    inicioAssociacao: string;
+    inicioAssociacao?: string | null;
     fimAssociacao?: string | null;
   }[];
 };
 
 export type VariablesPutClienteContaAnuncio = {
   id: string;
-  inicioAssociacao: string;
+  nomeContaCliente?: string | null;
+  inicioAssociacao?: string | null;
   fimAssociacao?: string | null;
 };
 
