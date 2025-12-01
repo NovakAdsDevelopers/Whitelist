@@ -172,41 +172,46 @@ const Table = () => {
   // API
   // ---------------------------------------------------------------------------
   const fetchExtrato = async () => {
-    try {
-      setLoading(true);
-      const params: Record<string, string> = {};
-      if (tipo !== 'todos') params.tipo = tipo;
-      if (dataInicio) params.dataInicio = dataInicio;
-      if (dataFim) params.dataFim = dataFim;
-      if (tipoTransacao) params.tipoTransacao = tipoTransacao;
+  try {
+    setLoading(true);
 
-      const response = await axios.get('http://localhost:4005/meta/consult-extrato', { params });
-      const { transacoes, periodo: p } = response.data;
-      setPeriodo(p);
+    const params: Record<string, string> = {};
+    if (tipo !== 'todos') params.tipo = tipo;
+    if (dataInicio) params.dataInicio = dataInicio;
+    if (dataFim) params.dataFim = dataFim;
+    if (tipoTransacao) params.tipoTransacao = tipoTransacao;
 
-      const formatted: TableRow[] = (transacoes ?? []).map((t: TransacaoExtrato) => ({
-        ...t,
-        valorNum: Number(t.valor)
-      }));
+    const baseURL = import.meta.env.VITE_APP_API_META_URL;
 
-      const totalC = formatted
-        .filter((t) => t.tipoOperacao === 'C')
-        .reduce((acc, t) => acc + t.valorNum, 0);
-      const totalD = formatted
-        .filter((t) => t.tipoOperacao === 'D')
-        .reduce((acc, t) => acc + t.valorNum, 0);
+    const response = await axios.get(`${baseURL}/consult-extrato`, { params });
+    const { transacoes, periodo: p } = response.data;
+    setPeriodo(p);
 
-      setSaldoCreditado(totalC);
-      setSaldoDebitado(totalD);
-      setSaldoAtual(totalC - totalD);
-      setData(formatted);
-    } catch (err: any) {
-      console.error('Erro ao carregar extrato:', err);
-      toast.error('Erro ao carregar extrato', { description: err?.message });
-    } finally {
-      setLoading(false);
-    }
-  };
+    const formatted: TableRow[] = (transacoes ?? []).map((t: TransacaoExtrato) => ({
+      ...t,
+      valorNum: Number(t.valor),
+    }));
+
+    const totalC = formatted
+      .filter((t) => t.tipoOperacao === 'C')
+      .reduce((acc, t) => acc + t.valorNum, 0);
+
+    const totalD = formatted
+      .filter((t) => t.tipoOperacao === 'D')
+      .reduce((acc, t) => acc + t.valorNum, 0);
+
+    setSaldoCreditado(totalC);
+    setSaldoDebitado(totalD);
+    setSaldoAtual(totalC - totalD);
+    setData(formatted);
+  } catch (err: any) {
+    console.error('Erro ao carregar extrato:', err);
+    toast.error('Erro ao carregar extrato', { description: err?.message });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // ---------------------------------------------------------------------------
   // Efeitos iniciais
