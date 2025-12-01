@@ -34,12 +34,28 @@ const FormCreateCliente = ({ onOpenChange }: IFormCreateClienteProps) => {
     initialValues: {},
     onSubmit: async (_, { setStatus, setSubmitting, resetForm }) => {
       setLoading(true);
+
+      // 🔥 VALIDAÇÃO — SOMENTE DATA INÍCIO É OBRIGATÓRIA
+      for (const conta of selectedContas) {
+        if (!conta.dataInicio) {
+          toast.message('❌ Preencha a data de início', {
+            description: `Conta: ${conta.label}`
+          });
+          setLoading(false);
+          setSubmitting(false);
+          return;
+        }
+      }
+
       try {
         const contasParaAssociar = selectedContas.map((conta) => ({
           contaAnuncioId: conta.value,
-          nomeContaCliente: conta.nomeContaCliente?.trim() || conta.label, // 👈 garantia do nome
+          nomeContaCliente: conta.nomeContaCliente?.trim() || conta.label,
           inicioAssociacao: toBrazilISODate(conta.dataInicio),
-          fimAssociacao: conta.hasDataFim ? toBrazilISODate(conta.dataFim!) : null
+          fimAssociacao:
+            conta.hasDataFim && conta.dataFim
+              ? toBrazilISODate(conta.dataFim)
+              : null
         }));
 
         await createClienteContasAnuncio({
