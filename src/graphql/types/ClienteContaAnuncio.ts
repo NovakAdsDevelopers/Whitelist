@@ -42,6 +42,7 @@ export interface TypesGetContaAnuncioAssociada {
     id: number;
     inicioAssociacao: Date;
     fimAssociacao?: Date;
+    nomeContaCliente: string;
     contaAnuncio: {
       nome: string;
     };

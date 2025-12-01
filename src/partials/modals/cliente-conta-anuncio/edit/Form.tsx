@@ -7,6 +7,7 @@ import {
   usePutClienteContasAnuncio,
   useQueryContasAnuncioAssociada
 } from '@/graphql/services/ClienteContaAnuncio';
+
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const validationSchema = Yup.object().shape({
+  nomeContaCliente: Yup.string().required('O nome da conta cliente é obrigatório'),
   dataInicio: Yup.string()
     .required('Data de início é obrigatória')
     .test('valid-date', 'Data de início inválida', (value) => !value || !isNaN(Date.parse(value!))),
@@ -30,9 +32,13 @@ const validationSchema = Yup.object().shape({
 });
 
 const FormClienteContaAnuncioEdit = ({ onClose, idAssociacao, idCliente }: Props) => {
-  const variables = useMemo(() => ({ clienteId: Number(idAssociacao) }), [idAssociacao]);
+  const variables = useMemo(
+    () => ({ clienteId: Number(idAssociacao) }),
+    [idAssociacao]
+  );
 
   const { data, loading: isLoading } = useQueryContasAnuncioAssociada(variables);
+
   const { updateClienteContaAnuncio, loading: isSaving } = usePutClienteContasAnuncio(
     Number(idCliente)
   );
@@ -40,6 +46,7 @@ const FormClienteContaAnuncioEdit = ({ onClose, idAssociacao, idCliente }: Props
   const formik = useFormik({
     initialValues: {
       nomeConta: '',
+      nomeContaCliente: '',
       dataInicio: '',
       dataFim: ''
     },
@@ -53,7 +60,8 @@ const FormClienteContaAnuncioEdit = ({ onClose, idAssociacao, idCliente }: Props
         await updateClienteContaAnuncio({
           id: idAssociacao,
           inicioAssociacao,
-          fimAssociacao
+          fimAssociacao,
+          nomeContaCliente: values.nomeContaCliente
         });
 
         toast.success('✅ Associação atualizada com sucesso!');
@@ -70,9 +78,11 @@ const FormClienteContaAnuncioEdit = ({ onClose, idAssociacao, idCliente }: Props
 
   useEffect(() => {
     const assoc = data?.GetContaAssociadaCliente;
+
     if (assoc) {
       formik.setValues({
         nomeConta: assoc.contaAnuncio?.nome || '',
+        nomeContaCliente: assoc.nomeContaCliente || '',
         dataInicio: assoc.inicioAssociacao
           ? new Date(assoc.inicioAssociacao).toISOString().substring(0, 10)
           : '',
@@ -89,14 +99,33 @@ const FormClienteContaAnuncioEdit = ({ onClose, idAssociacao, idCliente }: Props
         <p>Carregando dados da associação...</p>
       ) : (
         <>
-          {/* Nome da Conta */}
+          {/* Nome da Conta (somente leitura) */}
           <div className="flex flex-col gap-1">
-            <label className="form-label">Nome da Conta</label>
+            <label className="form-label">Nome da Conta (Original)</label>
             <Input
-              className="border-2 border-gray-400 px-4 py-2 rounded-md"
+              className="border-2 border-gray-400 px-4 py-2 rounded-md bg-gray-100"
               value={formik.values.nomeConta}
               disabled
             />
+          </div>
+
+          {/* Nome da Conta Cliente (editável) */}
+          <div className="flex flex-col gap-1">
+            <label className="form-label">Nome da Conta Cliente</label>
+            <Input
+              {...formik.getFieldProps('nomeContaCliente')}
+              className={`border-2 border-gray-400 px-4 py-2 rounded-md ${
+                formik.touched.nomeContaCliente && formik.errors.nomeContaCliente
+                  ? 'is-invalid'
+                  : ''
+              }`}
+            />
+
+            {formik.touched.nomeContaCliente && formik.errors.nomeContaCliente && (
+              <span role="alert" className="text-danger text-xs mt-1">
+                {formik.errors.nomeContaCliente}
+              </span>
+            )}
           </div>
 
           {/* Data de Início */}
@@ -133,7 +162,7 @@ const FormClienteContaAnuncioEdit = ({ onClose, idAssociacao, idCliente }: Props
             )}
           </div>
 
-          {/* Botão de Ação */}
+          {/* Botão de ação */}
           <div className="w-full flex justify-end pt-4">
             <Button type="submit" disabled={isSaving || formik.isSubmitting}>
               {isSaving || formik.isSubmitting ? 'Salvando...' : 'Salvar'}
